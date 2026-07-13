@@ -6,7 +6,7 @@
   <title>JARVIS OS — Open-Source AI Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/docs.css" />
+  <link rel="stylesheet" href="../static/css/docs.css" />
 </head>
 <body>
 
@@ -22,6 +22,7 @@
   </div>
   <div class="links">
     <a href="#features">Features</a>
+    <a href="#demo">Demo</a>
     <a href="#install">Install</a>
     <a href="https://github.com" target="_blank">GitHub</a>
     <a href="http://127.0.0.1:5000" class="btn-ghost">Launch HUD</a>
@@ -33,10 +34,11 @@
   <div class="hero-canvas-wrap" data-reveal>
     <canvas id="reactorCanvas" width="200" height="200"></canvas>
   </div>
-  <h1 data-reveal>Your <span>AI</span> Assistant.<br />Your <span>Computer</span>.</h1>
+  <h1 id="heroTitle" data-reveal></h1>
   <p data-reveal>
-    JARVIS OS is an open-source, real-time AI personal assistant that lives on <em>your</em> machine.
-    Chat naturally, control your desktop, automate tasks — all powered by Google Gemini.
+    Open-source AI assistant that lives on <em>your</em> machine.
+    Chat naturally, control your desktop, automate tasks —
+    powered by Google Gemini.
   </p>
   <div class="hero-actions" data-reveal>
     <a href="#install" class="btn-primary">✦ Get Started</a>
@@ -50,9 +52,12 @@
   </div>
 </section>
 
+<!-- Divider -->
+<div class="section-divider"></div>
+
 <!-- Features -->
 <section id="features" data-reveal-group>
-  <div class="section-tag" data-reveal>✦ CAPABILITIES</div>
+  <div class="section-tag" data-reveal>CAPABILITIES</div>
   <h2 class="section-title" data-reveal>What JARVIS Can Do</h2>
   <p class="section-desc" data-reveal>Over 20 built-in tools let JARVIS control your computer, browse the web, create documents, and more — all through natural conversation.</p>
   <div class="features-grid">
@@ -119,6 +124,36 @@
   </div>
 </section>
 
+<!-- Divider -->
+<div class="section-divider"></div>
+
+<!-- Chat Demo -->
+<section id="demo" class="demo-section" data-reveal-group>
+  <div class="section-tag" data-reveal>💬 LIVE DEMO</div>
+  <h2 class="section-title" data-reveal>See It in Action</h2>
+  <p class="section-desc" data-reveal>A real conversation with JARVIS. Watch messages stream in naturally.</p>
+  <div class="demo-chat" data-reveal>
+    <div class="demo-chat-header">
+      <span class="dot-indicator"></span>
+      J.A.R.V.I.S — ONLINE
+    </div>
+    <div class="demo-chat-body" id="demoChatBody">
+      <div class="demo-msg jarvis">
+        <span class="dm-label">JARVIS</span>
+        Good day. All systems nominal. How can I help you?
+      </div>
+    </div>
+    <div class="demo-chat-input">
+      <span class="prompt">$</span>
+      <span class="typing-text" id="demoTyping"></span>
+      <span class="cursor-blink" id="demoCursor"></span>
+    </div>
+  </div>
+</section>
+
+<!-- Divider -->
+<div class="section-divider"></div>
+
 <!-- Terminal Demo -->
 <section class="terminal-section" id="install" data-reveal-group>
   <div class="section-tag" data-reveal>⚡ QUICK START</div>
@@ -134,12 +169,15 @@
       <span>bash — JARVIS OS setup</span>
     </div>
     <div class="terminal-body" id="terminalBody">
-      <span class="comment"># Initializing terminal demo…</span><br />
+      <span class="comment"># Initializing…</span><br />
       <span class="prompt">$</span> <span class="cmd" id="termCmd"></span><span class="cursor" id="termCursor"></span><br />
       <span class="output" id="termOutput"></span>
     </div>
   </div>
 </section>
+
+<!-- Divider -->
+<div class="section-divider"></div>
 
 <!-- Example Commands -->
 <section data-reveal-group>
@@ -149,7 +187,7 @@
   <div class="commands-grid">
     <div class="cmd-item" data-reveal><code>"Open Chrome"</code><span>Launch browser</span></div>
     <div class="cmd-item" data-reveal><code>"Weather in Vizag"</code><span>Live weather</span></div>
-    <div class="cmd-item" data-reveal><code>"Solve x² - 4 = 0"</code><span>Math solver</span></div>
+    <div class="cmd-item" data-reveal><code>"Solve x² − 4 = 0"</code><span>Math solver</span></div>
     <div class="cmd-item" data-reveal><code>"Tell me a joke"</code><span>Joke time</span></div>
     <div class="cmd-item" data-reveal><code>"Take a screenshot"</code><span>Capture screen</span></div>
     <div class="cmd-item" data-reveal><code>"Create a PDF resume"</code><span>Document gen</span></div>
@@ -161,6 +199,9 @@
     <div class="cmd-item" data-reveal><code>"Check system status"</code><span>Health check</span></div>
   </div>
 </section>
+
+<!-- Divider -->
+<div class="section-divider"></div>
 
 <!-- Architecture -->
 <section data-reveal-group>
@@ -191,6 +232,7 @@
 <footer data-reveal-group>
   <div class="footer-links" data-reveal>
     <a href="#features">Features</a>
+    <a href="#demo">Demo</a>
     <a href="#install">Install</a>
     <a href="https://github.com" target="_blank">GitHub</a>
     <a href="https://aistudio.google.com/apikey" target="_blank">Get API Key</a>
@@ -254,7 +296,6 @@
       ctx.fill();
     }
 
-    // Connection lines
     for (let i = 0; i < parts.length; i++) {
       for (let j = i+1; j < parts.length; j++) {
         const dx = parts[i].x - parts[j].x;
@@ -277,7 +318,7 @@
 })();
 </script>
 
-<!-- Scroll Reveal + Interactive JS -->
+<!-- Main Interactive JS -->
 <script>
 (function() {
   // ── Nav scroll effect ──
@@ -286,19 +327,41 @@
     nav.classList.toggle('scrolled', window.scrollY > 80);
   });
 
+  // ── Hero word split animation ──
+  const heroH1 = document.getElementById('heroTitle');
+  if (heroH1) {
+    const text = "Your AI Assistant. Your Computer.";
+    // Which words get the glow class (index-based)
+    const glowIndices = [1, 4]; // "AI" and "Computer"
+    const brightIndices = [1];  // "AI" gets multi-color gradient
+    const words = text.split(' ');
+    heroH1.innerHTML = words.map((w, i) => {
+      let cls = 'word';
+      if (glowIndices.includes(i)) cls += ' glow';
+      if (brightIndices.includes(i)) cls += ' bright';
+      const delay = 0.4 + i * 0.12;
+      return `<span class="${cls}" style="animation-delay:${delay}s">${w}</span>`;
+    }).join(' ') + '<span style="display:inline-block;width:0.3em"></span>';
+    // Add period at end with separate span
+    const period = document.createElement('span');
+    period.className = 'word';
+    period.textContent = '.';
+    period.style.animationDelay = (0.4 + words.length * 0.12) + 's';
+    heroH1.appendChild(period);
+  }
+
   // ── Scroll reveal with IntersectionObserver ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const children = entry.target.querySelectorAll('[data-reveal]');
         children.forEach((el, i) => {
-          setTimeout(() => el.classList.add('revealed'), i * 100);
+          setTimeout(() => el.classList.add('revealed'), i * 80);
         });
         observer.unobserve(entry.target);
       }
     });
   }, { threshold: 0.1 });
-
   document.querySelectorAll('[data-reveal-group]').forEach(el => observer.observe(el));
 
   // ── Stats count-up ──
@@ -313,7 +376,6 @@
           const start = performance.now();
           function update(now) {
             const t = Math.min((now - start) / duration, 1);
-            // easeOutCubic
             const ease = 1 - Math.pow(1 - t, 3);
             el.textContent = Math.round(ease * target) + (t >= 1 && target > 20 ? '+' : '');
             if (t < 1) requestAnimationFrame(update);
@@ -327,8 +389,97 @@
   const heroStats = document.querySelector('.hero-stats');
   if (heroStats) statObserver.observe(heroStats);
 
+  // ── 3D Tilt on feature cards ──
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+    });
+  });
+
+  // ── Chat demo auto-play ──
+  const DEMOS = [
+    [
+      { who: 'user', text: 'What can you do?' },
+      { who: 'jarvis', text: 'I can control your computer, browse the web, manage files, send emails, set reminders, and more. Try asking me something!' }
+    ],
+    [
+      { who: 'user', text: 'Open Chrome and search for AI news' },
+      { who: 'jarvis', text: 'Opening Chrome. Searching for latest AI news…' }
+    ],
+    [
+      { who: 'user', text: 'What\'s the weather in Vizag?' },
+      { who: 'jarvis', text: 'Currently 31°C, partly cloudy. Feels like 34°C. Humidity 78%. A light breeze from the southwest.' }
+    ],
+    [
+      { who: 'user', text: 'Create a PDF resume from my profile' },
+      { who: 'jarvis', text: 'Generating resume.pdf… Done. Includes your education, skills, projects, and experience. Saved to Desktop.' }
+    ]
+  ];
+
+  const demoBody = document.getElementById('demoChatBody');
+  const demoTyping = document.getElementById('demoTyping');
+  const demoCursor = document.getElementById('demoCursor');
+  let demoIdx = 0, msgIdx = 0, charIdx = 0, isDemoTyping = false;
+
+  function runDemo() {
+    if (!demoBody || !demoTyping) return;
+    // Clear extra messages (keep first greeting)
+    while (demoBody.children.length > 1) demoBody.removeChild(demoBody.lastChild);
+
+    msgIdx = 0;
+    nextMessage();
+  }
+
+  function nextMessage() {
+    const demo = DEMOS[demoIdx % DEMOS.length];
+    if (msgIdx >= demo.length) {
+      // Wait, then cycle
+      setTimeout(() => { demoIdx++; runDemo(); }, 3000);
+      return;
+    }
+    const msg = demo[msgIdx];
+    isDemoTyping = true;
+    charIdx = 0;
+    demoTyping.textContent = '';
+    if (demoCursor) demoCursor.style.display = 'inline-block';
+
+    function typeChar() {
+      if (charIdx < msg.text.length) {
+        demoTyping.textContent += msg.text[charIdx];
+        charIdx++;
+        setTimeout(typeChar, 20 + Math.random() * 15);
+      } else {
+        isDemoTyping = false;
+        if (demoCursor) demoCursor.style.display = 'none';
+        demoTyping.textContent = '';
+        // Add message to chat
+        const el = document.createElement('div');
+        el.className = 'demo-msg ' + msg.who;
+        el.innerHTML = `<span class="dm-label">${msg.who === 'user' ? 'YOU' : 'JARVIS'}</span>${msg.text}`;
+        demoBody.appendChild(el);
+        demoBody.scrollTop = demoBody.scrollHeight;
+        msgIdx++;
+        setTimeout(nextMessage, msg.who === 'user' ? 400 : 1800);
+      }
+    }
+    setTimeout(typeChar, 500);
+  }
+
+  // Start demo after page settles
+  setTimeout(runDemo, 2800);
+
   // ── Terminal auto-typing demo ──
-  const demos = [
+  const termDemos = [
     { cmd: 'git clone https://github.com/yourusername/OpenJarvis.git', output: '✓ Cloned repository (42 files)' },
     { cmd: 'cd OpenJarvis && pip install -r requirements.txt', output: '✓ Installed all dependencies' },
     { cmd: 'cp .env.example .env', output: '✓ Config ready (add your API key)' },
@@ -338,42 +489,38 @@
   const termCmd = document.getElementById('termCmd');
   const termOutput = document.getElementById('termOutput');
   const termCursor = document.getElementById('termCursor');
-  let demoIdx = 0, charIdx = 0, isTyping = false;
+  let termIdx = 0, termChar = 0;
 
-  function typeDemo() {
+  function typeTerm() {
     if (!termCmd || !termOutput) return;
-    const demo = demos[demoIdx % demos.length];
-    charIdx = 0;
-    isTyping = true;
+    const demo = termDemos[termIdx % termDemos.length];
+    termChar = 0;
     termOutput.textContent = '';
     termCmd.textContent = '';
 
     function typeChar() {
-      if (charIdx < demo.cmd.length) {
-        termCmd.textContent += demo.cmd[charIdx];
-        charIdx++;
-        setTimeout(typeChar, 25 + Math.random() * 20);
+      if (termChar < demo.cmd.length) {
+        termCmd.textContent += demo.cmd[termChar];
+        termChar++;
+        setTimeout(typeChar, 20 + Math.random() * 18);
       } else {
-        isTyping = false;
-        termCursor.style.display = 'none';
+        if (termCursor) termCursor.style.display = 'none';
         setTimeout(() => {
           termOutput.textContent = demo.output;
           termOutput.className = 'output';
         }, 300);
         setTimeout(() => {
-          demoIdx++;
+          termIdx++;
           termOutput.textContent = '';
           termCmd.textContent = '';
-          termCursor.style.display = 'inline-block';
-          setTimeout(typeDemo, 400);
+          if (termCursor) termCursor.style.display = 'inline-block';
+          setTimeout(typeTerm, 400);
         }, 2500);
       }
     }
     typeChar();
   }
-
-  // Start terminal after a short delay
-  setTimeout(typeDemo, 1200);
+  setTimeout(typeTerm, 1500);
 })();
 </script>
 

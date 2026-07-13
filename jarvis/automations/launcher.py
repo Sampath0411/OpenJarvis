@@ -402,7 +402,7 @@ def open_browser_tab(site: str) -> str:
         "type": "object",
         "properties": {
             "url": {"type": "string", "description": "Video/audio URL to download."},
-            "format": {
+            "media_format": {
                 "type": "string",
                 "enum": ["video", "audio"],
                 "description": "'video' for mp4, 'audio' for mp3 (default video).",
@@ -413,7 +413,7 @@ def open_browser_tab(site: str) -> str:
         "required": ["url"],
     },
 )
-def download_video(url: str, format: str = "video", path: str = "") -> str:
+def download_video(url: str, media_format: str = "video", path: str = "") -> str:
     out_dir = Path(path).expanduser() if path else Path.home() / "jarvis_workspace" / "downloads"
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -422,8 +422,6 @@ def download_video(url: str, format: str = "video", path: str = "") -> str:
         subprocess.run(["yt-dlp", "--version"], capture_output=True, timeout=5)
     except FileNotFoundError:
         return "yt-dlp not installed. Run: pip install yt-dlp"
-    except Exception:
-        return "yt-dlp not installed. Run: pip install yt-dlp"
 
     cmd = [
         "yt-dlp",
@@ -431,7 +429,7 @@ def download_video(url: str, format: str = "video", path: str = "") -> str:
         "--no-playlist",
         "--print", "after_move:filepath",
     ]
-    if format == "audio":
+    if media_format == "audio":
         cmd += ["-x", "--audio-format", "mp3", "--audio-quality", "0"]
     else:
         cmd += ["-f", "best[height<=1080]"]

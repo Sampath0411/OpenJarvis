@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import requests
@@ -15,11 +14,12 @@ from .registry import tool
 WORKSPACE = Path.home() / "jarvis_workspace"
 
 
-def _ask_gemini(prompt: str, model: str = "gemini-3-flash-preview") -> str:
+def _ask_gemini(prompt: str, model: str = "") -> str:
     """Send a prompt to Gemini and return text response."""
     keys = CONFIG.all_keys()
     if not keys:
         return "No Gemini API key configured."
+    model = model or CONFIG.model or "gemini-3-flash-preview"
     url = f"{GEMINI_BASE}/{model}:generateContent"
     for key in keys:
         try:
@@ -74,7 +74,18 @@ def run_self_healing(path: str, args: str = "", max_attempts: int = 3) -> str:
     if p.suffix.lower() != ".py":
         return f"Only .py files supported (got '{p.suffix}')"
 
-    original = p.read_text(encoding="utf-8")
+    try:
+        original = p.read_text(encoding="utf-8")
+    except Exception as exc:
+        return f"Couldn't read {path}: {exc}"
+    # Backup original
+    backup = WORKSPACE / "code_backups" / f"{p.stem}_original.py"
+    try:
+        backup.parent.mkdir(parents=True, exist_ok=True)
+        backup.write_text(original, encoding="utf-8")
+    except Exception:
+        pass  # non-critical
+
     attempt = 0
     last_output = ""
 
@@ -132,7 +143,7 @@ def run_self_healing(path: str, args: str = "", max_attempts: int = 3) -> str:
     return (
         f"❌ Failed after {max_attempts} attempts.\n"
         f"Last output:\n{last_output.strip()[:3000]}"
-        f"\n\nOriginal code backed up — check ~/jarvis_workspace/"
+        f"\n\nOriginal backed up at {backup}"
     )
 
 

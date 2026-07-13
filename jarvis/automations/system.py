@@ -390,7 +390,6 @@ def cancel_shutdown() -> str:
 )
 def network_info() -> str:
     info: list[str] = []
-    IS_WIN = platform.system() == "Windows"
 
     # Public IP
     try:

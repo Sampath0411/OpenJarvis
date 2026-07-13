@@ -81,16 +81,17 @@ def adb_device_info() -> str:
     if err:
         return err
 
-    model = _adb("shell getprop ro.product.model")
-    brand = _adb("shell getprop ro.product.brand")
-    android_ver = _adb("shell getprop ro.build.version.release")
-    battery = _adb("shell dumpsys battery | grep level")
-    ip_wlan = _adb("shell ip -f inet addr show wlan0 2>/dev/null || echo ''")
-    ip_wlan = ip_wlan or _adb("shell ifconfig wlan0 2>/dev/null | grep inet")
+    model = (_adb("shell getprop ro.product.model") or "Unknown").strip()
+    brand = (_adb("shell getprop ro.product.brand") or "Unknown").strip()
+    android_ver = (_adb("shell getprop ro.build.version.release") or "?").strip()
+    battery = _adb("shell dumpsys battery")
+    ip_wlan = _adb("shell ip -f inet addr show wlan0 2>/dev/null")
+    if not ip_wlan or "does not exist" in ip_wlan.lower():
+        ip_wlan = _adb("shell ifconfig wlan0 2>/dev/null")
 
     lines = [
-        f"📱 Model: {brand.strip()} {model.strip()}",
-        f"🤖 Android: {android_ver.strip()}",
+        f"📱 Model: {brand} {model}",
+        f"🤖 Android: {android_ver}",
     ]
     batt_match = re.search(r"level:\s*(\d+)", battery)
     if batt_match:
@@ -163,29 +164,21 @@ def adb_notifications(limit: int = 10) -> str:
     if err:
         return err
 
-    out = _adb(f"shell dumpsys notification --noredact | grep -A 5 'NotificationRecord'", timeout=10)
-    if not out:
+    raw = _adb("shell dumpsys notification --noredact", timeout=10)
+    if not raw:
         return "No notifications found or couldn't read them."
 
-    # Parse notification blocks
-    entries: list[str] = []
-    current: list[str] = []
-    for line in out.splitlines():
-        if "NotificationRecord" in line:
-            if current:
-                entries.append("\n".join(current))
-            current = [line]
-        else:
-            current.append(line)
-    if current:
-        entries.append("\n".join(current))
-
-    # Simplify: extract package + title + text
+    # Split by NotificationRecord — parse in Python (avoids grep -A which
+    # isn't available on Android's toybox shell).
+    blocks = raw.split("NotificationRecord")
     results: list[str] = []
-    for entry in entries[:limit]:
-        pkg_match = re.search(r'packageName=([^\s,]+)', entry)
-        title_match = re.search(r'titleText=([^\n]+)', entry)
-        text_match = re.search(r'text=[\s\"]*([^\n\"]+)', entry)
+    for block in blocks[:limit + 1]:
+        if not block.strip():
+            continue
+        # Extract fields from the block (text may span lines, so use DOTALL)
+        pkg_match = re.search(r'packageName=([^\s,]+)', block)
+        title_match = re.search(r'titleText=([^\n]+)', block)
+        text_match = re.search(r'text=([^\n]+)', block)
 
         parts = []
         if pkg_match:
@@ -197,10 +190,10 @@ def adb_notifications(limit: int = 10) -> str:
 
         if parts:
             results.append(" ".join(parts))
+            if len(results) >= limit:
+                break
 
-    if not results:
-        return "No readable notifications found."
-    return "\n".join(f"{i+1}. {r}" for i, r in enumerate(results))
+    return "\n".join(f"{i+1}. {r}" for i, r in enumerate(results)) if results else "No readable notifications found."
 
 
 @tool(

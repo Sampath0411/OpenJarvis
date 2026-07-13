@@ -58,8 +58,6 @@ def add(name: str, phone: str, aliases: list[str] | None = None,
     """Add or update a contact. Returns the saved contact."""
     items = _load()
     phone_clean = _normalize_phone(phone)
-    if not phone_clean:
-        raise ValueError(f"Invalid phone number: {phone!r}")
 
     # Update if name matches
     for c in items:
@@ -82,7 +80,10 @@ def add(name: str, phone: str, aliases: list[str] | None = None,
         "created_at": datetime.now().isoformat(timespec="seconds"),
     }
     items.append(new)
-    _save(items)
+    try:
+        _save(items)
+    except OSError as exc:
+        raise OSError(f"Could not save contacts: {exc}") from exc
     return new
 
 
@@ -96,7 +97,10 @@ def remove(query: str) -> int:
     ]
     removed = len(items) - len(kept)
     if removed:
-        _save(kept)
+        try:
+            _save(kept)
+        except OSError as exc:
+            raise OSError(f"Could not save contacts: {exc}") from exc
     return removed
 
 

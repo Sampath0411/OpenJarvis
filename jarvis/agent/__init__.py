@@ -96,11 +96,13 @@ class Agent:
             return {"ok": True, "verdict": "success", "summary": summary}
 
         if verdict["verdict"] in ("retry", "replan") and goal.get("retries_left", goal.get("max_retries", 2)) > 0:
-            # retry: clear failed steps, keep done ones
-            remaining = [
-                s for s in steps
-                if s.get("status") in ("done", "skipped")
-            ]
+            # retry: reset all steps to pending so failed ones re-run
+            remaining = steps[:]  # keep all steps
+            for s in remaining:
+                if s.get("status") in ("failed", "running"):
+                    s["status"] = "pending"
+                    s.pop("result", None)
+                    s.pop("attempts", None)
             _goals.set_steps(goal_id, remaining if remaining else [])
             _goals.update(goal_id, retries_left=goal.get("retries_left", goal.get("max_retries", 2)) - 1)
             _goals.set_status(goal_id, "pending")

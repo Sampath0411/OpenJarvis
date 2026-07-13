@@ -80,7 +80,12 @@ def launch(no_server: bool = False) -> None:
 
     _server_started.wait(timeout=15)
 
-    import webview as _wv
+    try:
+        import webview as _wv
+    except ImportError:
+        print("pywebview is required for the GUI. Install: pip install pywebview")
+        print("Or run: python server.py  (web server without GUI)")
+        sys.exit(1)
 
     # Window creation — frameless but resizable, with the HUD in full effect.
     window = _wv.create_window(

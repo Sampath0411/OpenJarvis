@@ -146,7 +146,7 @@ def read_notifications(limit: int = 10, after_id: int | None = None) -> list[dic
 
     con = None
     try:
-        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        con = sqlite3.connect("file:" + Path(tmp).as_posix() + "?mode=ro", uri=True)
         cur = con.cursor()
         where = "WHERE n.Payload IS NOT NULL"
         params: list = []
@@ -219,7 +219,7 @@ def _max_notification_id() -> int | None:
         return None
     con = None
     try:
-        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        con = sqlite3.connect("file:" + Path(tmp).as_posix() + "?mode=ro", uri=True)
         row = con.execute("SELECT MAX(Id) FROM Notification").fetchone()
         return int(row[0]) if row and row[0] is not None else None
     except Exception:  # noqa: BLE001

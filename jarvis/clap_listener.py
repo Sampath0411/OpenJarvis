@@ -31,13 +31,24 @@ try:
     def _peak_int16(data: bytes) -> int:
         return audioop.max(data, 2)
 except ImportError:  # pragma: no cover - depends on Python version
-    import numpy as _np
+    try:
+        import numpy as _np
 
-    def _peak_int16(data: bytes) -> int:
-        if not data:
-            return 0
-        arr = _np.frombuffer(data, dtype=_np.int16)
-        return int(_np.abs(arr).max()) if arr.size else 0
+        def _peak_int16(data: bytes) -> int:
+            if not data:
+                return 0
+            arr = _np.frombuffer(data, dtype=_np.int16)
+            return int(_np.abs(arr).max()) if arr.size else 0
+    except ImportError:
+        # Pure-Python fallback — no dependencies
+        import struct
+
+        def _peak_int16(data: bytes) -> int:
+            if not data:
+                return 0
+            count = len(data) // 2
+            vals = struct.unpack(f"<{count}h", data[:count * 2])
+            return max(abs(v) for v in vals)
 
 IS_WIN = platform.system() == "Windows"
 

@@ -58,18 +58,28 @@ def send_email(to: str, subject: str, body: str, html: bool = False) -> str:
             "Open Settings → Email and enter your SMTP credentials, "
             "or set JARVIS_EMAIL / JARVIS_EMAIL_PASSWORD in .env."
         )
+    if not _CREDENTIALS.get("password"):
+        return "❌ Email password is not configured."
     try:
         msg = MIMEText(body, "html" if html else "plain")
         msg["Subject"] = subject
         msg["From"] = _CREDENTIALS["email"]
         msg["To"] = to
 
-        with smtplib.SMTP(
-            _CREDENTIALS["smtp_host"],
-            _CREDENTIALS.get("smtp_port", 587),
-        ) as s:
-            s.starttls()
-            s.login(_CREDENTIALS["email"], _CREDENTIALS.get("password", ""))
+        port = int(_CREDENTIALES.get("smtp_port", 587))
+        if port == 465:
+            with smtplib.SMTP_SSL(
+                _CREDENTIALS["smtp_host"], port,
+            ) as s:
+                s.login(_CREDENTIALS["email"], _CREDENTIALS.get("password", ""))
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(
+                _CREDENTIALS["smtp_host"], port,
+            ) as s:
+                s.starttls()
+                s.login(_CREDENTIALS["email"], _CREDENTIALS.get("password", ""))
+                s.send_message(msg)
             s.send_message(msg)
 
         return f"✅ Email sent to {to} with subject \"{subject}\"."

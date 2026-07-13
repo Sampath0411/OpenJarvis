@@ -138,7 +138,7 @@ class Executor:
         for k, v in args.items():
             if isinstance(v, str) and v.startswith("{step_") and v.endswith(".result}"):
                 try:
-                    ref = int(v[6:].split("_")[1].split(".")[0])
+                    ref = int(v.strip("{}").split(".")[0].split("_")[1])
                     if ref in results:
                         new[k] = results[ref]
                 except Exception:

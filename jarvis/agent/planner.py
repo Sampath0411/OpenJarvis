@@ -102,7 +102,7 @@ def _extract_steps(raw: str) -> list[dict] | None:
         raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
         raw = re.sub(r"\n?```$", "", raw)
     # Grab the first balanced JSON object
-    m = re.search(r"\{[\s\S]*\}", raw)
+    m = re.search(r"\{[\s\S]*?\}", raw)
     if not m:
         return None
     try:

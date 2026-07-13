@@ -66,7 +66,7 @@ def _llm_verdict(brain, goal_title: str, summary: dict) -> dict[str, Any]:
         raw = brain.complete(prompt, max_tokens=200)
         import json
         import re
-        m = re.search(r"\{[\s\S]*\}", raw)
+        m = re.search(r"\{[\s\S]*?\}", raw)
         if m:
             d = json.loads(m.group(0))
             v = d.get("verdict")

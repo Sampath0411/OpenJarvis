@@ -81,12 +81,12 @@ class Watchdog:
             pass
 
     def _loop(self) -> None:
-        import psutil
+        import psutil as _psutil  # import once, outside loop
 
         while self._running:
             try:
                 # battery
-                batt = getattr(psutil, "sensors_battery", lambda: None)()
+                batt = getattr(_psutil, "sensors_battery", lambda: None)()
                 if batt is not None:
                     if not batt.power_plugged and batt.percent <= 20:
                         self._emit("batt_low", "warn", f"Battery low: {batt.percent:.0f}%. Plug in soon, sir.")

@@ -16,7 +16,7 @@ from datetime import datetime
 from threading import Timer
 
 import requests
-from flask import Flask, Response, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory, stream_with_context
 
 # Make console output UTF-8 safe (Windows terminals often default to cp1252).
 for _stream in (sys.stdout, sys.stderr):
@@ -204,7 +204,9 @@ def chat_stream():
         def no_key():
             yield _sse({"type": "error", "error": "no_key",
                         "text": "No API key set. Open settings and paste your Gemini API key."})
-        return Response(no_key(), mimetype="text/event-stream")
+        return Response(stream_with_context(no_key()), mimetype="text/event-stream",
+                        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+                        direct_passthrough=True)
 
     data = request.get_json(force=True, silent=True) or {}
     message = (data.get("message") or "").strip()
@@ -287,8 +289,9 @@ def chat_stream():
                 user_text = f"Model error: {msg}"
             yield _sse({"type": "error", "text": user_text})
 
-    return Response(generate(), mimetype="text/event-stream",
-                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return Response(stream_with_context(generate()), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+                    direct_passthrough=True)
 
 
 @app.route("/api/approve", methods=["POST"])
@@ -337,8 +340,9 @@ def approve():
                     yield _sse({"type": "done", "text": raw})
             except Exception as exc:  # noqa: BLE001
                 yield _sse({"type": "error", "text": f"Model error: {exc}"})
-        return Response(gen_denied(), mimetype="text/event-stream",
-                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+        return Response(stream_with_context(gen_denied()), mimetype="text/event-stream",
+                        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+                        direct_passthrough=True)
 
     # Approved — the tool ran. Resume the loop to get the model's final response.
     def gen_resume():
@@ -372,8 +376,9 @@ def approve():
                 yield _sse({"type": "done", "text": raw})
         except Exception as exc:  # noqa: BLE001
             yield _sse({"type": "error", "text": f"Model error: {exc}"})
-    return Response(gen_resume(), mimetype="text/event-stream",
-                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return Response(stream_with_context(gen_resume()), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+                    direct_passthrough=True)
 
 
 @app.route("/api/vision", methods=["POST"])

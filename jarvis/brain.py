@@ -363,50 +363,53 @@ class Brain:
         keys = CONFIG.all_keys()
         if not keys:
             yield {"type": "error",
-                   "text": "No Gemini API key configured (set JARVIS_GEMINI_KEY in .env)."}
+                   "text": "No Gemini API key configured."}
             return
         order = self._key_order(keys)
-        for model in (models or self._models_to_try(payload.get("model"))):
-            for ki in order:
-                key = keys[ki]
-                url = f"{GEMINI_BASE}/{model}:streamGenerateContent"
-                try:
-                    resp = self.session.post(
-                        url,
-                        params={"key": key, "alt": "sse"},
-                        json=base_payload, stream=True, timeout=(5, 120),
-                    )
-                except requests.RequestException as exc:
-                    last_err = f"{model}: network {exc}"
-                    saw_non_quota = True
-                    continue
-                if resp.status_code != 200:
-                    body = ""
+        for attempt in range(3):  # auto-retry up to 3 times with backoff
+            for model in (models or self._models_to_try(payload.get("model"))):
+                for ki in order:
+                    key = keys[ki]
+                    url = f"{GEMINI_BASE}/{model}:streamGenerateContent"
                     try:
-                        body = resp.text[:200]
-                    except Exception:  # noqa: BLE001
-                        pass
-                    if self._is_quota_error(resp.status_code, body):
-                        last_err = f"{model} key#{ki+1}: {resp.status_code} {body}"
-                        self._mark_key_dead(resp.status_code)
-                        continue
-                    if resp.status_code in RETRYABLE_KEY_STATUS or resp.status_code in FATAL_KEY_STATUS:
-                        last_err = f"{model} key#{ki+1}: {resp.status_code} {body}"
+                        resp = self.session.post(
+                            url,
+                            params={"key": key, "alt": "sse"},
+                            json=base_payload, stream=True, timeout=(5, 120),
+                        )
+                    except requests.RequestException as exc:
+                        last_err = f"{model}: network {exc}"
                         saw_non_quota = True
-                        self._mark_key_dead(resp.status_code)
                         continue
-                    # 400 — try next model
-                    last_err = f"{model} key#{ki+1}: {resp.status_code} {body}"
-                    saw_non_quota = True
-                    break
+                    if resp.status_code != 200:
+                        body = ""
+                        try:
+                            body = resp.text[:200]
+                        except Exception:  # noqa: BLE001
+                            pass
+                        if self._is_quota_error(resp.status_code, body):
+                            last_err = f"{model} key#{ki+1}: limit"
+                            self._mark_key_dead(resp.status_code)
+                            continue
+                        if resp.status_code in RETRYABLE_KEY_STATUS or resp.status_code in FATAL_KEY_STATUS:
+                            last_err = f"{model} key#{ki+1}: {resp.status_code}"
+                            saw_non_quota = True
+                            self._mark_key_dead(resp.status_code)
+                            continue
+                        # 400 — try next model
+                        last_err = f"{model} key#{ki+1}: {resp.status_code}"
+                        saw_non_quota = True
+                        break
 
-                # We got a 200 — remember which key worked and parse the SSE stream.
-                with self._key_lock:
-                    self._key_index = ki
-                yield from self._parse_stream(resp, model)
-                return
-            # try next model
-
+                    # We got a 200 — remember which key worked and parse the SSE stream.
+                    with self._key_lock:
+                        self._key_index = ki
+                    yield from self._parse_stream(resp, model)
+                    return
+            # All models + keys tried. Wait and retry.
+            if attempt < 2:
+                time.sleep(2 ** attempt)  # 1s, 2s backoff
+        # Truly exhausted after 3 rounds
         yield {"type": "error",
                "text": self._exhausted_text(saw_non_quota, last_err, len(keys))}
 

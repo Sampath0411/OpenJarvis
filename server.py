@@ -266,27 +266,17 @@ def chat_stream():
             m = msg.lower()
             if "resource_exhausted" in m or "quota_exhausted" in m \
                     or ("429" in msg and ("quota" in m or "rate" in m)):
-                user_text = (
-                    "⏳ Both Gemini keys hit their rate limit. Wait a minute, "
-                    "or set a different model in Settings (`gemini-2.5-flash`, "
-                    "`gemini-2.0-flash-lite`)."
-                )
+                user_text = "⏳ Rate limit reached. Auto-retrying..."
             elif "401" in msg or "403" in msg or "api key" in m or "auth" in m:
-                user_text = (
-                    "🔑 Gemini rejected the API key. Open Settings and "
-                    "re-paste your key from https://aistudio.google.com/apikey."
-                )
+                user_text = "🔑 Invalid API key. Check Settings."
             elif "404" in msg and "model" in m:
-                user_text = (
-                    "🚫 That Gemini model isn't available. Open Settings and "
-                    "pick a different model."
-                )
+                user_text = "🚫 Model unavailable. Change in Settings."
             elif "429" in msg or "rate" in m:
-                user_text = "⏳ Rate-limited by Gemini. Try again in a few seconds."
+                user_text = "⏳ Rate limited. Retrying..."
             elif "timeout" in m or "timed out" in m:
-                user_text = "⏱ Gemini timed out. Try again."
+                user_text = "⏱ Request timed out."
             elif "connection" in m or "network" in m:
-                user_text = "📡 Network error — check your connection."
+                user_text = "📡 Network error."
             else:
                 user_text = f"Model error: {msg}"
             yield _sse({"type": "error", "text": user_text})

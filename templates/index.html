@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="arc">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>J.A.R.V.I.S</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <link rel="stylesheet" href="/static/css/hud.css" />
+</head>
+<body>
+  <!-- SVG sprite -->
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="ic-logo" viewBox="0 0 24 24"><path d="M12 2 22 12 12 22 2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></symbol>
+    <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="ic-command" viewBox="0 0 24 24"><path d="M4 17l6-5-6-5"/><path d="M12 19h8"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+    <symbol id="ic-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="ic-memory" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="ic-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></symbol>
+    <symbol id="ic-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="ic-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></symbol>
+    <symbol id="ic-send" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></symbol>
+    <symbol id="ic-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="ic-close" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></symbol>
+    <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></symbol>
+    <symbol id="ic-battery" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></symbol>
+    <symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+    <symbol id="ic-disk" viewBox="0 0 24 24"><rect x="2" y="14" width="20" height="6" rx="2"/><path d="M6 17h.01M10 17h.01"/><path d="m6 14 3-8h6l3 8"/></symbol>
+    <symbol id="ic-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></symbol>
+    <symbol id="ic-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
+    <symbol id="ic-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="ic-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
+    <symbol id="ic-wifi" viewBox="0 0 24 24"><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></symbol>
+    <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="ic-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></symbol>
+    <symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M17 18a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3.5 3.5 0 0 0 6 18z"/></symbol>
+    <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></symbol>
+    <symbol id="ic-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="ic-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="ic-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+    <symbol id="ic-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+    <symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></symbol>
+    <symbol id="ic-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="ic-minimize" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="ic-maximize" viewBox="0 0 24 24"><path d="M8 3H5v3M16 3h3v3M8 21H5v-3M16 21h3v-3"/></symbol>
+    <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="ic-mail" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+    <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+    <symbol id="ic-package" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+    <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+    <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+    <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="ic-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+    <symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+    <symbol id="ic-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="ic-attach" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  </svg>
+
+  <!-- Background layers -->
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Boot overlay -->
+  <div id="boot" class="boot">
+    <div class="boot-ring"></div>
+    <div class="boot-ring boot-ring--slow"></div>
+    <pre id="bootLog" class="boot-log"></pre>
+  </div>
+
+  <!-- Toast alerts -->
+  <div id="toasts" class="toasts"></div>
+
+  <!-- ═══ TOP BAR ═══ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <svg class="ic brand-logo"><use href="#ic-logo"/></svg>
+        <span class="brand-title" id="brandTitle">J.A.R.V.I.S</span>
+      </div>
+      <div class="brand-badge" id="statusDot">OFFLINE</div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="clock-box">
+        <svg class="ic"><use href="#ic-clock"/></svg>
+        <span id="clock" class="clock">--:-- --</span>
+        <span class="clock-date" id="dateStr">---</span>
+      </div>
+      <div class="weather-pill" id="weather" title="Weather">
+        <svg class="ic"><use href="#ic-cloud"/></svg>
+        <span id="weatherVal">--</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="indicator-group">
+        <span class="pill" id="indBatt" title="Battery"><svg class="ic"><use href="#ic-battery"/></svg><span>--</span></span>
+        <span class="pill" id="indCpu" title="CPU"><svg class="ic"><use href="#ic-cpu"/></svg><span>--</span></span>
+        <span class="pill" id="indRam" title="Memory"><svg class="ic"><use href="#ic-activity"/></svg><span>--</span></span>
+      </div>
+      <span class="stat-chip" id="modelLabel">--</span>
+      <button id="themeToggle" class="icon-btn" title="Toggle theme">
+        <svg class="ic"><use href="#ic-sun"/></svg>
+      </button>
+      <button id="menuBtn" class="icon-btn" title="Menu">
+        <svg class="ic"><use href="#ic-menu"/></svg>
+      </button>
+      <!-- Dropdown menu -->
+      <div id="topMenu" class="dropdown hidden">
+        <button data-act="palette"><svg class="ic"><use href="#ic-command"/></svg> Commands</button>
+        <button data-act="files"><svg class="ic"><use href="#ic-folder"/></svg> File explorer</button>
+        <button data-act="email"><svg class="ic"><use href="#ic-mail"/></svg> Email</button>
+        <button data-act="reminders"><svg class="ic"><use href="#ic-bell"/></svg> Reminders</button>
+        <button data-act="plugins"><svg class="ic"><use href="#ic-package"/></svg> Plugins</button>
+        <button data-act="qr"><svg class="ic"><use href="#ic-phone"/></svg> Phone connect</button>
+        <button data-act="contacts"><svg class="ic"><use href="#ic-user"/></svg> Contacts</button>
+        <button data-act="sessions"><svg class="ic"><use href="#ic-memory"/></svg> Sessions</button>
+        <button data-act="backup"><svg class="ic"><use href="#ic-archive"/></svg> Backup memory</button>
+        <button data-act="settings"><svg class="ic"><use href="#ic-settings"/></svg> Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN LAYOUT ═══ -->
+  <div class="app-layout">
+
+    <!-- Left Sidebar: System Status -->
+    <aside class="sidebar sidebar--left" id="sidebarLeft">
+      <div class="sidebar-section">
+        <div class="sidebar-label">REACTOR CORE</div>
+        <canvas id="reactor" class="reactor-canvas" width="160" height="160"></canvas>
+        <div id="reactorState" class="reactor-status">STANDBY</div>
+        <canvas id="waveform" class="waveform" width="160" height="24"></canvas>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">SYSTEM</div>
+        <div class="sys-grid">
+          <div class="sys-item">
+            <span class="sys-item-label">CPU</span>
+            <div class="bar-track"><div class="bar-fill" id="barCpu" style="width:0%"></div></div>
+            <span class="sys-item-val" id="sCpu">0%</span>
+          </div>
+          <div class="sys-item">
+            <span class="sys-item-label">RAM</span>
+            <div class="bar-track"><div class="bar-fill" id="barRam" style="width:0%"></div></div>
+            <span class="sys-item-val" id="sRam">0%</span>
+          </div>
+          <div class="sys-item">
+            <span class="sys-item-label">DSK</span>
+            <div class="bar-track"><div class="bar-fill bar-fill--amber" id="barDisk" style="width:0%"></div></div>
+            <span class="sys-item-val" id="sDisk">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section sidebar-section--compact">
+        <div class="tile-row">
+          <div class="tile-item"><span class="tile-label">DOWN</span><span class="tile-val" id="sDown">--</span></div>
+          <div class="tile-item"><span class="tile-label">UP</span><span class="tile-val" id="sUp">--</span></div>
+          <div class="tile-item"><span class="tile-label">PROCS</span><span class="tile-val" id="sProcs">--</span></div>
+          <div class="tile-item"><span class="tile-label">UPTIME</span><span class="tile-val" id="sUptime">--</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section sidebar-section--compact">
+        <div class="sys-footer">
+          <span id="sHost">--</span>
+          <span class="dot-sep">·</span>
+          <span id="sOs">--</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center: Chat Panel -->
+    <main class="main-panel">
+      <!-- Chat tabs bar -->
+      <div class="chat-tabs" id="chatTabs">
+        <div class="chat-tabs-scroll" id="chatTabsScroll">
+          <div class="chat-tab active" data-tab="default">Main</div>
+        </div>
+        <button id="chatTabAdd" class="chat-tab-add" title="New chat tab">+</button>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <span class="chat-header-title">CONVERSATION</span>
+          <div class="chat-header-actions">
+            <div class="chat-search-box" id="chatSearchBox">
+              <input id="chatSearchInput" class="chat-search-input" type="text" placeholder="Search messages…" />
+              <button id="chatSearchBtn" class="ghost-btn" title="Search"><svg class="ic"><use href="#ic-search"/></svg></button>
+              <button id="chatSearchClose" class="ghost-btn hidden" title="Close search">✕</button>
+            </div>
+            <button id="resetBtn" class="ghost-btn" title="Clear memory"><svg class="ic"><use href="#ic-reset"/></svg> RESET</button>
+            <button id="exportBtn" class="ghost-btn" title="Export"><svg class="ic"><use href="#ic-download"/></svg> EXPORT</button>
+          </div>
+        </div>
+
+        <div id="log" class="chat-log"></div>
+
+        <form id="composer" class="composer" autocomplete="off">
+          <button type="button" id="attachBtn" class="composer-btn" title="Attach image/file"><svg class="ic"><use href="#ic-image"/></svg></button>
+          <input type="file" id="fileInput" accept="image/*, .pdf, .txt, .py, .js, .html, .css" hidden multiple />
+          <button type="button" id="seeBtn" class="composer-btn" title="Screen capture"><svg class="ic"><use href="#ic-eye"/></svg></button>
+          <button type="button" id="micBtn" class="composer-btn" title="Voice input"><svg class="ic"><use href="#ic-mic"/></svg></button>
+          <input id="input" class="chat-input" type="text" placeholder="Message JARVIS…" autofocus />
+          <button type="submit" class="send-btn" title="Send"><svg class="ic"><use href="#ic-send"/></svg></button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Right Sidebar (removed) -->
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-nav">
+    <button class="mnav-btn" data-view="sidebarLeft"><svg class="ic"><use href="#ic-activity"/></svg><span>STATUS</span></button>
+    <button class="mnav-btn active" data-view="main"><svg class="ic"><use href="#ic-message"/></svg><span>CHAT</span></button>
+    <button class="mnav-btn" id="mnavMic"><svg class="ic"><use href="#ic-mic"/></svg><span>SPEAK</span></button>
+    <button class="mnav-btn" id="mnavSettings"><svg class="ic"><use href="#ic-settings"/></svg><span>SETUP</span></button>
+  </nav>
+
+  <!-- ═══ MODALS ═══ -->
+
+  <!-- Settings -->
+  <div id="settings" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-settings"/></svg> SYSTEM CONFIG</span>
+        <button id="closeSettings" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body modal-body--tabs">
+        <!-- Settings tabs -->
+        <div class="settings-tabs">
+          <button class="settings-tab active" data-stab="general">General</button>
+          <button class="settings-tab" data-stab="email">Email</button>
+          <button class="settings-tab" data-stab="themes">Themes</button>
+        </div>
+
+        <!-- General tab -->
+        <div class="settings-panel" data-stab="general">
+          <label class="field">
+            <span class="field-label">GEMINI API KEY</span>
+            <div class="key-row">
+              <input id="apiKey" type="password" placeholder="AIza…" class="field-input" />
+              <button type="button" id="toggleKey" class="icon-btn" title="Show/Hide"><svg class="ic"><use href="#ic-eye"/></svg></button>
+            </div>
+            <span class="field-hint">Saved to <code>.env</code>. Get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a></span>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">PERSONA</span>
+              <select id="persona" class="field-input">
+                <option value="jarvis">JARVIS — butler</option>
+                <option value="friday">FRIDAY — casual</option>
+                <option value="coach">COACH — study</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">LANGUAGE</span>
+              <select id="language" class="field-input">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="te">తెలుగు</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="field-label">MODEL</span>
+            <select id="model" class="field-input">
+              <option value="gemini-3-flash-preview">gemini-3-flash-preview — free &amp; unlimited</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash — fast</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash — smarter</option>
+              <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite — light</option>
+              <option value="gemini-flash-latest">gemini-flash-latest</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+              <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b</option>
+              <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+              <option value="gemini-pro-latest">gemini-pro-latest</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro — smartest</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+            <input id="modelCustom" type="text" class="field-input hidden" placeholder="gemini-model-name" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">ACCESS PIN</span>
+              <input id="pin" type="text" class="field-input" inputmode="numeric" maxlength="8" placeholder="e.g. 2468 (blank=off)" />
+            </label>
+            <label class="field">
+              <span class="field-label">SOUND FX</span>
+              <input id="soundToggle" type="checkbox" class="toggle-input" checked />
+            </label>
+          </div>
+
+          <div id="lanInfo" class="lan-info hidden"></div>
+
+          <label class="field field--row">
+            <span class="field-label">VOICE REPLIES</span>
+            <input id="voiceToggle" type="checkbox" class="toggle-input" checked />
+          </label>
+        </div>
+
+        <!-- Email tab -->
+        <div class="settings-panel hidden" data-stab="email">
+          <label class="field">
+            <span class="field-label">EMAIL ADDRESS</span>
+            <input id="emailAddr" type="email" class="field-input" placeholder="you@gmail.com" />
+          </label>
+          <label class="field">
+            <span class="field-label">APP PASSWORD</span>
+            <input id="emailPass" type="password" class="field-input" placeholder="App password (not your regular password)" />
+            <span class="field-hint">Use an app-specific password. For Gmail: <a href="https://myaccount.google.com/apppasswords" target="_blank">Generate one here</a></span>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">SMTP HOST</span>
+              <input id="smtpHost" type="text" class="field-input" placeholder="smtp.gmail.com" />
+            </label>
+            <label class="field">
+              <span class="field-label">SMTP PORT</span>
+              <input id="smtpPort" type="number" class="field-input" value="587" />
+            </label>
+          </div>
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">IMAP HOST</span>
+              <input id="imapHost" type="text" class="field-input" placeholder="imap.gmail.com" />
+            </label>
+            <label class="field">
+              <span class="field-label">IMAP PORT</span>
+              <input id="imapPort" type="number" class="field-input" value="993" />
+            </label>
+          </div>
+          <p id="emailStatus" class="form-msg"></p>
+        </div>
+
+        <!-- Themes tab -->
+        <div class="settings-panel hidden" data-stab="themes">
+          <p class="field-hint" style="margin-bottom:16px">Choose your HUD appearance. New themes apply instantly.</p>
+          <div class="theme-grid" id="themeGrid">
+            <div class="theme-card active" data-theme="arc">
+              <div class="theme-preview theme-preview--arc"></div>
+              <span class="theme-name">Arc Reactor</span>
+              <span class="theme-desc">Cyan glow</span>
+            </div>
+            <div class="theme-card" data-theme="mark3">
+              <div class="theme-preview theme-preview--mark3"></div>
+              <span class="theme-name">Mark III</span>
+              <span class="theme-desc">Gold accent</span>
+            </div>
+            <div class="theme-card" data-theme="ultron">
+              <div class="theme-preview theme-preview--ultron"></div>
+              <span class="theme-name">Ultron</span>
+              <span class="theme-desc">Red menace</span>
+            </div>
+            <div class="theme-card" data-theme="stealth">
+              <div class="theme-preview theme-preview--stealth"></div>
+              <span class="theme-name">Stealth</span>
+              <span class="theme-desc">Mono covert</span>
+            </div>
+            <div class="theme-card" data-theme="midnight">
+              <div class="theme-preview theme-preview--midnight"></div>
+              <span class="theme-name">Midnight</span>
+              <span class="theme-desc">Purple deep</span>
+            </div>
+            <div class="theme-card" data-theme="amoled">
+              <div class="theme-preview theme-preview--amoled"></div>
+              <span class="theme-name">AMOLED</span>
+              <span class="theme-desc">True black</span>
+            </div>
+            <div class="theme-card" data-theme="light">
+              <div class="theme-preview theme-preview--light"></div>
+              <span class="theme-name">Light</span>
+              <span class="theme-desc">Clean bright</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:20px">
+          <button id="saveSettings" class="btn-primary"><svg class="ic"><use href="#ic-logo"/></svg> ENGAGE</button>
+        </div>
+        <div id="settingsMsg" class="form-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approval modal -->
+  <div id="approval" class="modal hidden">
+    <div class="modal-card modal-card--danger">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-alert"/></svg> ACTION REQUIRED</span>
+        <span id="approvalTimeout" class="approval-timer">60s</span>
+      </div>
+      <div class="modal-body">
+        <p id="approvalPrompt" class="approval-text">JARVIS wants to run a protected action.</p>
+        <pre id="approvalArgs" class="approval-code"></pre>
+        <div class="approval-actions">
+          <button id="approvalDeny" class="btn-ghost-danger"><svg class="ic"><use href="#ic-close"/></svg> DENY</button>
+          <button id="approvalEngage" class="btn-primary"><svg class="ic"><use href="#ic-check"/></svg> ALLOW</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Explorer modal -->
+  <div id="filesModal" class="modal hidden">
+    <div class="modal-card modal-card--xl">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-folder"/></svg> FILE EXPLORER</span>
+        <button id="closeFiles" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="file-toolbar">
+          <span id="filePath" class="file-path">~</span>
+          <button id="fileRefresh" class="ghost-btn"><svg class="ic"><use href="#ic-reset"/></svg></button>
+          <input id="fileSearch" class="file-search" type="text" placeholder="Filter…" />
+        </div>
+        <div id="fileList" class="file-list">
+          <div class="file-empty">Loading…</div>
+        </div>
+        <div id="filePreview" class="file-preview hidden">
+          <div class="file-preview-head">
+            <span id="filePreviewName" class="file-preview-name"></span>
+            <button id="filePreviewClose" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+          </div>
+          <pre id="filePreviewContent" class="file-preview-content"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email modal -->
+  <div id="emailModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-mail"/></svg> EMAIL</span>
+        <button id="closeEmail" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="email-tabs">
+          <button class="email-tab active" data-etab="compose">Compose</button>
+          <button class="email-tab" data-etab="inbox">Inbox</button>
+        </div>
+        <div class="email-panel" data-etab="compose">
+          <label class="field">
+            <span class="field-label">TO</span>
+            <input id="emailTo" type="email" class="field-input" placeholder="recipient@example.com" />
+          </label>
+          <label class="field">
+            <span class="field-label">SUBJECT</span>
+            <input id="emailSubject" type="text" class="field-input" placeholder="Subject" />
+          </label>
+          <label class="field">
+            <span class="field-label">MESSAGE</span>
+            <textarea id="emailBody" class="field-textarea" rows="6" placeholder="Write your message…"></textarea>
+          </label>
+          <button id="emailSend" class="btn-primary"><svg class="ic"><use href="#ic-send"/></svg> SEND</button>
+          <p id="emailMsg" class="form-msg"></p>
+        </div>
+        <div class="email-panel hidden" data-etab="inbox">
+          <button id="emailRefreshInbox" class="ghost-btn" style="margin-bottom:12px"><svg class="ic"><use href="#ic-reset"/></svg> REFRESH</button>
+          <div id="emailInboxList" class="email-inbox-list">
+            <div class="file-empty">Configure email in Settings to view inbox.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reminders modal -->
+  <div id="remindersModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-bell"/></svg> REMINDERS</span>
+        <button id="closeReminders" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="reminder-composer">
+          <input id="reminderText" class="field-input" type="text" placeholder="Remind me to…" />
+          <input id="reminderWhen" class="field-input reminder-datetime" type="datetime-local" />
+          <button id="reminderAdd" class="btn-primary btn-sm">+</button>
+        </div>
+        <div id="remindersList" class="reminders-list"></div>
+        <p id="reminderMsg" class="form-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plugin marketplace modal -->
+  <div id="pluginsModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-package"/></svg> PLUGIN MARKETPLACE</span>
+        <button id="closePlugins" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <p class="field-hint" style="margin-bottom:12px">Enable or disable JARVIS automation tools.</p>
+        <div id="pluginsList" class="plugins-list"></div>
+        <p id="pluginMsg" class="form-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image gallery (lightbox) -->
+  <div id="gallery" class="gallery hidden">
+    <button id="galleryClose" class="gallery-close"><svg class="ic"><use href="#ic-close"/></svg></button>
+    <img id="galleryImg" class="gallery-img" alt="Gallery" />
+    <div class="gallery-caption" id="galleryCaption"></div>
+  </div>
+
+  <!-- Search results overlay -->
+  <div id="searchResults" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-search"/></svg> SEARCH RESULTS</span>
+        <button id="searchResultsClose" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div id="searchResultsList" class="search-results-list"></div>
+        <p id="searchResultsEmpty" class="file-empty hidden">No results found.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacts modal -->
+  <div id="contactsModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-user"/></svg> CONTACTS</span>
+        <button id="closeContacts" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div id="contactsList" class="contacts-list"></div>
+        <div class="contact-form">
+          <input id="contactName" class="field-input" type="text" placeholder="Name" />
+          <input id="contactPhone" class="field-input" type="text" placeholder="Phone" />
+          <input id="contactAliases" class="field-input field-input--wide" type="text" placeholder="Aliases (comma-separated)" />
+          <button id="contactAdd" class="btn-primary">+ ADD</button>
+          <p id="contactMsg" class="form-msg"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sessions modal -->
+  <div id="sessionsModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-memory"/></svg> SESSION MEMORY</span>
+        <button id="closeSessions" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <p class="sessions-hint">JARVIS summarises each session and recalls them when relevant.</p>
+        <div id="sessionsList" class="sessions-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR modal -->
+  <div id="qrModal" class="modal hidden">
+    <div class="modal-card modal-card--compact">
+      <div class="modal-head">
+        <span><svg class="ic"><use href="#ic-phone"/></svg> PHONE CONNECT</span>
+        <button id="closeQr" class="icon-btn"><svg class="ic"><use href="#ic-close"/></svg></button>
+      </div>
+      <div class="modal-body modal-body--centered">
+        <p class="qr-hint">Scan with your phone camera to open JARVIS (same Wi-Fi).</p>
+        <div class="qr-frame">
+          <img id="qrImg" alt="QR Code" class="qr-img" />
+        </div>
+        <div class="qr-url" id="qrUrl">--</div>
+        <div class="qr-actions">
+          <button id="qrCopy" class="ghost-btn"><svg class="ic"><use href="#ic-copy"/></svg> COPY</button>
+          <button id="qrDone" class="btn-primary"><svg class="ic"><use href="#ic-check"/></svg> DONE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command palette -->
+  <div id="palette" class="palette hidden">
+    <div class="palette-card">
+      <input id="paletteInput" class="palette-input" placeholder="Type a command…" />
+      <div id="paletteList" class="palette-list"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="/static/js/hud.js"></script>
+</body>
+</html>

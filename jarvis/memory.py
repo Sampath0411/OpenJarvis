@@ -37,8 +37,9 @@ class Memory:
     def refresh_system_prompt(self, base: str) -> None:
         """Update message[0] with a new base system prompt (e.g. after persona change)."""
         self.system_prompt = base
-        if self.messages and self.messages[0].get("role") == "system":
-            self.messages[0]["content"] = base
+        with self._lock:
+            if self.messages and self.messages[0].get("role") == "system":
+                self.messages[0]["content"] = base
 
     # ── message ops ──────────────────────────────────
     def add(self, role: str, content: str | None = None, **extra: Any) -> None:

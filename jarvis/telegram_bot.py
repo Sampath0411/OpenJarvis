@@ -1346,10 +1346,8 @@ class TelegramBot:
                 return
             try:
                 await self._react(update.message, "🤔")
-                with self._memory_lock:
-                    self.memory.add("user", user_text)
-                    # Log to daily file
-                    self.memory.log_daily("user", user_text)
+                # stream_ask adds the user message to memory internally —
+                # no need to add it here again.
                 # If the user asked for shutdown/restart via a button, we
                 # run that tool directly so we can show the approval UI
                 # without depending on the model.

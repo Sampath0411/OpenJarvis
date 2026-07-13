@@ -223,6 +223,7 @@ def chat_stream():
             tool_results: list[dict] = []
             pending = False
             got_error = False
+            stream_done = False
             for event in BRAIN.stream_ask(message):
                 etype = event.get("type")
                 if etype == "token":
@@ -236,12 +237,13 @@ def chat_stream():
                     pending = True
                 elif etype == "error":
                     got_error = True
+                elif etype == "done":
+                    stream_done = True
                 # Stream all events through (HUD shows live tokens)
                 yield _sse(event)
-            if pending or got_error:
-                # An error event (e.g. blocked/truncated reply) was already
-                # sent above — don't follow it with a "done" that overwrites
-                # the specific reason with a vague placeholder.
+            if pending or got_error or stream_done:
+                # Error/approval/done already sent by the stream — don't
+                # send a duplicate "done" that could carry different text.
                 return
             # The streamed tokens ARE the final reply — Gemini is the only
             # model in the loop. No second pass needed.
@@ -314,6 +316,7 @@ def approve():
                 tokens: list[str] = []
                 tool_results: list[dict] = []
                 last_user = ""
+                stream_done = False
                 for m in reversed(BRAIN.memory.messages):
                     if m.get("role") == "user" and m.get("content"):
                         last_user = m["content"]
@@ -327,7 +330,11 @@ def approve():
                             "name": ev.get("name", ""),
                             "result": ev.get("result", ""),
                         })
+                    elif etype == "done":
+                        stream_done = True
                     yield _sse(ev)
+                if stream_done:
+                    return
                 raw = "".join(tokens).strip()
                 if raw and last_user:
                     # The streamed tokens ARE the final reply — no second pass.
@@ -350,6 +357,7 @@ def approve():
             tokens: list[str] = []
             tool_results: list[dict] = []
             last_user = ""
+            stream_done = False
             for m in reversed(BRAIN.memory.messages):
                 if m.get("role") == "user" and m.get("content"):
                     last_user = m["content"]
@@ -363,7 +371,11 @@ def approve():
                         "name": ev.get("name", ""),
                         "result": ev.get("result", ""),
                     })
+                elif etype == "done":
+                    stream_done = True
                 yield _sse(ev)
+            if stream_done:
+                return
             raw = "".join(tokens).strip()
             if raw and last_user:
                 # The streamed tokens ARE the final reply — no second pass.

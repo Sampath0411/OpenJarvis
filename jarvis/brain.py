@@ -79,13 +79,22 @@ class Brain:
                 self._key_index = 0
             return keys[self._key_index]
 
+    def _current_key_unsafe(self) -> str:
+        """Same as _current_key but with NO lock — caller must hold _key_lock."""
+        keys = CONFIG.all_keys()
+        if not keys:
+            return ""
+        if self._key_index >= len(keys):
+            self._key_index = 0
+        return keys[self._key_index]
+
     def _mark_key_dead(self, status: int) -> None:
         """When a key hits a fatal or quota error, switch to the next one."""
         keys = CONFIG.all_keys()
         if len(keys) <= 1:
             return  # nothing to fall back to
         with self._key_lock:
-            old = self._current_key()
+            old = self._current_key_unsafe()
             self._key_index = (self._key_index + 1) % len(keys)
         new = self._current_key()
         if old and old not in self._key_warned:
@@ -293,7 +302,8 @@ class Brain:
                     saw_non_quota = True
                     continue
                 if resp.status_code == 200:
-                    self._key_index = ki  # remember the key that worked
+                    with self._key_lock:
+                        self._key_index = ki  # remember the key that worked
                     return _gemini_to_openai_shape(resp.json(), model)
                 body = resp.text[:140]
                 if self._is_quota_error(resp.status_code, body):
@@ -391,7 +401,8 @@ class Brain:
                     break
 
                 # We got a 200 — remember which key worked and parse the SSE stream.
-                self._key_index = ki
+                with self._key_lock:
+                    self._key_index = ki
                 yield from self._parse_stream(resp, model)
                 return
             # try next model

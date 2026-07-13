@@ -70,11 +70,13 @@ body::after {
   background-size: 56px 56px;
 }
 
-/* ===== Background Particles Canvas ===== */
-#bgParticles {
+/* ===== Three.js Background ===== */
+#three-bg {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 0; pointer-events: none;
-  opacity: 0.6;
+}
+#three-bg canvas {
+  display: block;
 }
 
 /* ===== Section glow divider ===== */
@@ -519,7 +521,7 @@ footer a { color: var(--primary); text-decoration: none; }
   nav .links { gap: 16px; }
   nav .links a { font-size: 12px; }
   nav .links .btn-ghost { padding: 6px 14px; font-size: 12px; }
-  #bgParticles { display: none; }
+  #three-bg { display: none; }
 
   .hero { padding: 100px 20px 60px; }
   #reactorCanvas { width: 140px; height: 140px; }

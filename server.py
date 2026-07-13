@@ -115,12 +115,6 @@ def index():
     return send_from_directory("templates", "index.html")
 
 
-@app.route("/docs")
-@app.route("/docs/")
-def docs():
-    return send_from_directory("docs", "index.html")
-
-
 def _lan_url() -> str:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -1214,7 +1208,7 @@ def _check_gemini_keys() -> None:
             print(f"[gemini] {label}: check skipped ({exc})")
 
 
-def run_server(open_browser: bool = True) -> None:
+def run_server(open_browser: bool = False) -> None:
     """Boot the JARVIS web HUD: watchdog, Gemini key check, Telegram bot, then
     serve the Flask app on 0.0.0.0:5000. This is the single entry point for the
     whole assistant now that the desktop GUI is gone — `python main.py` and

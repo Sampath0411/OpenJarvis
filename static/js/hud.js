@@ -728,13 +728,14 @@
 
   /* ---------- Settings ---------- */
   function openSettings() {
+    if (!els.settings) return;
     els.settings.classList.remove("hidden");
     // Pre-fill API key indicator if already configured
     fetch("/api/status").then(r => r.json()).then(s => {
-      if (s.has_key && !els.apiKey.value) els.apiKey.placeholder = "Already configured — change only if needed";
-      else if (!s.has_key) els.apiKey.placeholder = "Paste your Gemini API key here…";
+      if (s.has_key && els.apiKey && !els.apiKey.value) els.apiKey.placeholder = "Already configured — change only if needed";
+      else if (!s.has_key && els.apiKey) els.apiKey.placeholder = "Paste your Gemini API key here…";
     }).catch(() => {});
-    els.apiKey.focus();
+    if (els.apiKey) els.apiKey.focus();
   }
   function closeSettings() { els.settings.classList.add("hidden"); }
   els.closeSettings.addEventListener("click", closeSettings);
@@ -783,37 +784,40 @@
   }
 
   els.saveSettings.addEventListener("click", async () => {
-    let model = els.model.value; if (model === "__custom__") model = els.modelCustom.value.trim();
     els.settingsMsg.className = "form-msg"; els.settingsMsg.textContent = "Engaging…";
     try {
+      let model = "";
+      if (els.model) {
+        model = els.model.value;
+        if (model === "__custom__" && els.modelCustom) model = els.modelCustom.value.trim();
+      }
       const body = {
-        api_key: els.apiKey.value.trim() || undefined,
-        model: model,
-        persona: els.persona.value,
-        language: els.language.value,
-        theme: els.theme.value,
-        pin: els.pin.value.trim(),
+        api_key: (els.apiKey && els.apiKey.value.trim()) || undefined,
+        model: model || undefined,
+        language: els.language ? els.language.value : "en",
+        theme: els.theme ? els.theme.value : "arc",
+        pin: els.pin ? els.pin.value.trim() : "",
         persist: true,
       };
       // Email config — sent separately to /api/email/config
-      if (els.emailAddr.value.trim() && els.emailPass.value.trim()) {
+      if (els.emailAddr && els.emailAddr.value.trim() && els.emailPass && els.emailPass.value.trim()) {
         await api("/api/email/config", {
           method: "POST",
           body: JSON.stringify({
             email: els.emailAddr.value.trim(),
             password: els.emailPass.value,
-            smtp_host: els.smtpHost.value || "smtp.gmail.com",
-            smtp_port: parseInt(els.smtpPort.value, 10) || 587,
-            imap_host: els.imapHost.value || "imap.gmail.com",
-            imap_port: parseInt(els.imapPort.value, 10) || 993,
+            smtp_host: (els.smtpHost && els.smtpHost.value) || "smtp.gmail.com",
+            smtp_port: parseInt((els.smtpPort && els.smtpPort.value) || "587", 10) || 587,
+            imap_host: (els.imapHost && els.imapHost.value) || "imap.gmail.com",
+            imap_port: parseInt((els.imapPort && els.imapPort.value) || "993", 10) || 993,
           })
         });
       }
       const res = await api("/api/config", { method: "POST", body: JSON.stringify(body) });
       const data = await res.json();
-      voiceOn = els.voiceToggle.checked;
-      soundFx = els.soundToggle.checked;
-      accessPin = els.pin.value.trim(); localStorage.setItem(PIN_KEY, accessPin);
+      if (els.voiceToggle) voiceOn = els.voiceToggle.checked;
+      if (els.soundToggle) soundFx = els.soundToggle.checked;
+      if (els.pin) { accessPin = els.pin.value.trim(); localStorage.setItem(PIN_KEY, accessPin); }
       await refreshStatus();
       els.settingsMsg.className = "form-msg ok";
       els.settingsMsg.innerHTML = data.has_key ? icon("check") + " Systems online." : "Saved — no valid key yet.";

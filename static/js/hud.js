@@ -498,11 +498,14 @@
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const lang = els.language.value;
-    u.lang = lang === "hi" ? "hi-IN" : lang === "te" ? "te-IN" : "en-GB";
-    u.rate = 1.02; u.pitch = 0.9;
+    u.lang = lang === "hi" ? "hi-IN" : lang === "te" ? "te-IN" : "en-IN";
+    u.rate = 0.95; u.pitch = 0.95; u.volume = 1;
+    // Find best voice: prefer Indian English, then any English, then male
     const voices = window.speechSynthesis.getVoices();
-    const pref = voices.find(v => v.lang && v.lang.startsWith(u.lang.slice(0, 2)))
-      || voices.find(v => /male|david|daniel|rishi/i.test(v.name)) || voices[0];
+    const pref = voices.find(v => v.lang === "en-IN")
+      || voices.find(v => v.lang.startsWith("en"))
+      || voices.find(v => /male|david|daniel|rishi/i.test(v.name))
+      || voices[0];
     if (pref) u.voice = pref;
     u.onstart = () => { setState("SPEAKING", 0.9); setWave("speak"); };
     u.onend = () => { setWave(null); setState(busy ? "PROCESSING" : "ONLINE", busy ? 0.7 : 0.4); };

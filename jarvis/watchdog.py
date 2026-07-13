@@ -97,12 +97,7 @@ class Watchdog:
                     else:
                         self._clear_seen("batt_crit")
 
-                # RAM (only fires once, never clears — user can see CPU/RAM in sidebar UI)
-                mem = psutil.virtual_memory()
-                if mem.percent >= 90:
-                    self._emit("ram_high", "warn", f"Memory almost full: {mem.percent:.0f}%.")
-                elif mem.percent < 80:
-                    self._clear_seen("ram_high")
+                # RAM — sidebar HUD shows it live; no Telegram alert needed
             except Exception:  # noqa: BLE001
                 pass
             time.sleep(self.interval)

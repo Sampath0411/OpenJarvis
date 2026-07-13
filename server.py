@@ -823,7 +823,6 @@ def export():
 # ── File explorer ──────────────────────────────────────
 _ALLOWED_FILE_ROOTS = [
     os.path.expanduser("~"),
-    os.path.abspath(os.sep),
 ]
 
 
@@ -899,6 +898,11 @@ def file_explorer():
     action = data.get("action", "read")
     if not path:
         return jsonify({"error": "path_required"}), 400
+
+    # Same safe-path check as GET (only allow home & workspace)
+    absp = os.path.abspath(path)
+    if not any(absp.startswith(os.path.abspath(r)) for r in _ALLOWED_FILE_ROOTS):
+        return jsonify({"error": "forbidden", "message": "Access denied"}), 403
 
     if action == "read":
         if not os.path.isfile(path):

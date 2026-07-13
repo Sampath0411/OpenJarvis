@@ -6,7 +6,6 @@ import os
 import platform
 import shutil
 import subprocess
-import webbrowser
 
 from .registry import tool
 

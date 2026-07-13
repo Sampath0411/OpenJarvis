@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import threading
 import time
 from typing import Any, Callable, Iterator
 
@@ -60,6 +61,8 @@ class Brain:
         self.on_tool = on_tool
         self.registry = registry
         self.session = requests.Session()
+        # Thread safety for key rotation (used from web + Telegram threads)
+        self._key_lock = threading.Lock()
         # Track which key index we're on (0 = primary, 1 = backup). Updated
         # dynamically if a key gets rate-limited.
         self._key_index = 0
@@ -71,17 +74,19 @@ class Brain:
         keys = CONFIG.all_keys()
         if not keys:
             return ""
-        if self._key_index >= len(keys):
-            self._key_index = 0
-        return keys[self._key_index]
+        with self._key_lock:
+            if self._key_index >= len(keys):
+                self._key_index = 0
+            return keys[self._key_index]
 
     def _mark_key_dead(self, status: int) -> None:
         """When a key hits a fatal or quota error, switch to the next one."""
         keys = CONFIG.all_keys()
         if len(keys) <= 1:
             return  # nothing to fall back to
-        old = self._current_key()
-        self._key_index = (self._key_index + 1) % len(keys)
+        with self._key_lock:
+            old = self._current_key()
+            self._key_index = (self._key_index + 1) % len(keys)
         new = self._current_key()
         if old and old not in self._key_warned:
             self._key_warned.add(old)
@@ -105,8 +110,9 @@ class Brain:
         n = len(keys)
         if n == 0:
             return []
-        start = self._key_index % n
-        return [(start + off) % n for off in range(n)]
+        with self._key_lock:
+            start = self._key_index % n
+            return [(start + off) % n for off in range(n)]
 
     @staticmethod
     def _is_quota_error(status: int, body: str = "") -> bool:

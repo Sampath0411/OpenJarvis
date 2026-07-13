@@ -66,7 +66,7 @@ def send_email(to: str, subject: str, body: str, html: bool = False) -> str:
         msg["From"] = _CREDENTIALS["email"]
         msg["To"] = to
 
-        port = int(_CREDENTIALES.get("smtp_port", 587))
+        port = int(_CREDENTIALS.get("smtp_port", 587))
         if port == 465:
             with smtplib.SMTP_SSL(
                 _CREDENTIALS["smtp_host"], port,
@@ -80,7 +80,6 @@ def send_email(to: str, subject: str, body: str, html: bool = False) -> str:
                 s.starttls()
                 s.login(_CREDENTIALS["email"], _CREDENTIALS.get("password", ""))
                 s.send_message(msg)
-            s.send_message(msg)
 
         return f"✅ Email sent to {to} with subject \"{subject}\"."
     except Exception as exc:

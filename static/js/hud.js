@@ -730,10 +730,20 @@
   function openSettings() {
     if (!els.settings) return;
     els.settings.classList.remove("hidden");
-    // Pre-fill API key indicator if already configured
+    // Show masked key if already configured
     fetch("/api/status").then(r => r.json()).then(s => {
-      if (s.has_key && els.apiKey && !els.apiKey.value) els.apiKey.placeholder = "Already configured — change only if needed";
-      else if (!s.has_key && els.apiKey) els.apiKey.placeholder = "Paste your Gemini API key here…";
+      if (s.has_key && els.apiKey) {
+        if (s.api_key_masked) {
+          els.apiKey.value = s.api_key_masked;
+          els.apiKey.dataset.masked = "1";
+        } else {
+          els.apiKey.placeholder = "Already set — change only if needed";
+        }
+      } else if (els.apiKey) {
+        els.apiKey.placeholder = "Paste your Gemini API key here…";
+        els.apiKey.value = "";
+        delete els.apiKey.dataset.masked;
+      }
     }).catch(() => {});
     if (els.apiKey) els.apiKey.focus();
   }
@@ -791,8 +801,11 @@
         model = els.model.value;
         if (model === "__custom__" && els.modelCustom) model = els.modelCustom.value.trim();
       }
+      // If the field shows the masked key, don't send it (server keeps existing)
+      const rawKey = els.apiKey ? els.apiKey.value.trim() : "";
+      const isMasked = els.apiKey && els.apiKey.dataset.masked === "1";
       const body = {
-        api_key: (els.apiKey && els.apiKey.value.trim()) || undefined,
+        api_key: (rawKey && !isMasked) ? rawKey : undefined,
         model: model || undefined,
         language: els.language ? els.language.value : "en",
         theme: els.theme ? els.theme.value : "arc",
@@ -823,6 +836,8 @@
       els.settingsMsg.innerHTML = data.has_key ? icon("check") + " Systems online." : "Saved — no valid key yet.";
       showLan(data.lan_url);
       if (data.has_key) {
+        // Add an online confirmation message to the chat
+        try { addMsg("JARVIS", "Systems online. How can I help?"); } catch (_) {}
         if (data.pin_set && data.lan_url) {
           setTimeout(() => openQrModal(data.lan_url), 700);
         } else {

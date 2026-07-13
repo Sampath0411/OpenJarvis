@@ -128,10 +128,13 @@ def _lan_url() -> str:
 
 @app.route("/api/status")
 def status():
+    ak = CONFIG.api_key or ""
+    am = f"{ak[:6]}...{ak[-4:]}" if len(ak) > 12 else ""
     return jsonify({
         "name": personas.PERSONAS.get(CONFIG.persona, {}).get("name", CONFIG.name),
         "model": CONFIG.model,
         "has_key": CONFIG.has_key,
+        "api_key_masked": am,
         "persona": CONFIG.persona,
         "language": CONFIG.language,
         "theme": CONFIG.theme,

@@ -387,6 +387,68 @@
   /* ---------- Chat ---------- */
   let chatHistory = [];  // {who, text, tools, imgSrc, ts}
 
+  /* ---------- Context Panel (right sidebar) ---------- */
+  const ctxPanel = {
+    tools: [],
+    msgCount: 0,
+    enabledPlugins: [],
+    agentStatus: 'IDLE',
+
+    addTool(name) {
+      if (window.innerWidth <= 880) return;
+      this.tools.push({ name, ts: Date.now() });
+      if (this.tools.length > 20) this.tools.shift();
+      this.render();
+    },
+
+    incrementMsg() {
+      if (window.innerWidth <= 880) return;
+      this.msgCount++;
+      this.render();
+    },
+
+    async refresh() {
+      if (window.innerWidth <= 880) return;
+      try {
+        const p = await (await api('/api/plugins')).json();
+        this.enabledPlugins = (p.plugins || []).filter(p => p.enabled).map(p => p.name);
+      } catch (_) {}
+      try {
+        const a = await (await api('/api/agent/status')).json();
+        this.agentStatus = a.active ? 'ACTIVE' : 'IDLE';
+      } catch (_) {}
+      this.render();
+    },
+
+    render() {
+      const msgEl = document.getElementById('ctxMsgCount');
+      const toolEl = document.getElementById('ctxToolCount');
+      const toolsContainer = document.getElementById('ctxTools');
+      const pluginsContainer = document.getElementById('ctxPlugins');
+      const agentEl = document.getElementById('ctxAgent');
+      if (!msgEl || !toolsContainer) return;
+
+      msgEl.textContent = this.msgCount;
+      toolEl.textContent = this.tools.length;
+
+      if (this.tools.length === 0) {
+        toolsContainer.innerHTML = '<div class="ctx-empty">No tools used yet.</div>';
+      } else {
+        toolsContainer.innerHTML = this.tools.slice(-8).reverse().map(t =>
+          `<div class="ctx-tool-item">${icon('settings')} ${escapeHtml(t.name)}</div>`
+        ).join('');
+      }
+
+      if (pluginsContainer) {
+        pluginsContainer.innerHTML = this.enabledPlugins.length
+          ? this.enabledPlugins.map(p => `<div class="ctx-tool-item">${icon('package')} ${escapeHtml(p)}</div>`).join('')
+          : '<div class="ctx-empty">None enabled</div>';
+      }
+
+      if (agentEl) agentEl.textContent = this.agentStatus;
+    }
+  };
+
   function addMsg(who, text, tools, imgSrc) {
     const div = document.createElement("div");
     div.className = "msg " + (who === "You" ? "user" : "jarvis");
@@ -467,6 +529,7 @@
     els.log.appendChild(div);
     scrollLog();
     chatHistory.push({ who, text, tools, imgSrc, ts: now.toISOString() });
+    ctxPanel.incrementMsg();
     return { div, body };
   }
 
@@ -554,30 +617,75 @@
     typingEl.remove();
 
     let full = "";
-    try {
-      await consumeStream("/api/chat/stream", { message: text }, holder, (ev) => {
-        if (ev.type === "token") {
-          full += ev.text;
-          holder.body.innerHTML = renderMarkdown(full);
+    let wordsRendered = 0;
+    let revealTimer = null;
+
+    function startReveal() {
+      if (revealTimer) return;
+      revealTimer = setInterval(() => {
+        if (!full) return;
+        const words = full.split(/(\s+)/);
+        if (wordsRendered < words.length) {
+          wordsRendered += 5;
+          if (wordsRendered > words.length) wordsRendered = words.length;
+          const partial = words.slice(0, wordsRendered).join('');
+          holder.body.innerHTML = renderMarkdown(partial);
           if (window.hljs) holder.body.querySelectorAll("pre code").forEach(el => {
             try { hljs.highlightElement(el); } catch (_) {}
           });
           scrollLog();
+          // Animate code blocks
+          holder.body.querySelectorAll('pre[data-streaming]').forEach(el => {
+            setTimeout(() => el.removeAttribute('data-streaming'), 350);
+          });
+        } else if (wordsRendered >= words.length) {
+          clearInterval(revealTimer);
+          revealTimer = null;
         }
-        else if (ev.type === "tool") { appendChips(holder.div, [{ name: ev.name }]); }
-        else if (ev.type === "done") { full = ev.text || full; }
+      }, 40);
+    }
+
+    try {
+      await consumeStream("/api/chat/stream", { message: text }, holder, (ev) => {
+        if (ev.type === "token") {
+          full += ev.text;
+          holder.div.classList.add("streaming");
+          if (!revealTimer) startReveal();
+        }
+        else if (ev.type === "tool") {
+          appendChips(holder.div, [{ name: ev.name }]);
+          ctxPanel.addTool(ev.name);
+        }
+        else if (ev.type === "done") {
+          full = ev.text || full;
+          if (revealTimer) { clearInterval(revealTimer); revealTimer = null; }
+          wordsRendered = Infinity;
+          holder.body.innerHTML = renderMarkdown(full);
+          if (window.hljs) holder.body.querySelectorAll("pre code").forEach(el => {
+            try { hljs.highlightElement(el); } catch (_) {}
+          });
+        }
         else if (ev.type === "error") {
           if (ev.error === "no_key") { openSettings(); }
           full = ev.text || "Error."; pulseFlash("err"); setState("ERROR", 0.4, "err");
         }
         else if (ev.type === "approval_required") {
           appendChips(holder.div, [{ name: ev.name }]);
+          ctxPanel.addTool(ev.name);
           return "pause";
         }
       });
     } catch (err) { full = "Connection lost: " + err.message; pulseFlash("err"); }
     holder.body.classList.remove("cursor");
-    if (full) holder.body.innerHTML = renderMarkdown(full);
+    holder.div.classList.remove("streaming");
+    if (revealTimer) { clearInterval(revealTimer); revealTimer = null; }
+    if (full) {
+      holder.body.innerHTML = renderMarkdown(full);
+      holder.body.querySelectorAll('pre code').forEach(el => {
+        const pre = el.closest('pre');
+        if (pre) pre.removeAttribute('data-streaming');
+      });
+    }
     if (window.hljs) holder.body.querySelectorAll("pre code").forEach(el => {
       try { hljs.highlightElement(el); } catch (_) {}
     });
@@ -1081,6 +1189,7 @@
     try { sendLocation(); } catch (_) {}
     let s = null;
     try { s = await refreshStatus(); } catch (_) {}
+    try { await ctxPanel.refresh(); } catch (_) {}
     const greet = (s && s.has_key)
       ? "Good day, Sampath. All systems are online. How can I help?"
       : "Systems on standby. Open settings and paste your Gemini API key to bring me online, sir.";
@@ -1281,7 +1390,9 @@
 
   async function loadFiles(path) {
     if (!path) path = "";
-    els.fileList.innerHTML = '<div class="file-empty">Loading…</div>';
+    els.fileList.innerHTML = Array.from({ length: 4 }, () =>
+      '<div class="file-skeleton"></div>'
+    ).join('');
     try {
       const res = await api(`/api/files?path=${encodeURIComponent(path || "~")}`);
       const d = await res.json();
@@ -1359,6 +1470,101 @@
     const d = new Date(ts * 1000);
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
+
+  /* ════════════════════════════════════════════════════════════════
+     BACKGROUND PARTICLES
+     ════════════════════════════════════════════════════════════════ */
+
+  (function initBgParticles() {
+    const particleCanvas = document.getElementById('bgParticles');
+    if (!particleCanvas) return;
+    const pctx = particleCanvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      W = particleCanvas.width = window.innerWidth;
+      H = particleCanvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function cssVar(v) {
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+    function getPrimaryRGB() {
+      const hex = cssVar('--primary');
+      const n = parseInt(hex.replace('#', ''), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    const bgParts = Array.from({ length: 35 }, () => ({
+      x: Math.random() * (window.innerWidth || 800),
+      y: Math.random() * (window.innerHeight || 600),
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: 0.5 + Math.random() * 1.8,
+    }));
+
+    let mx = W / 2, my = H / 2;
+    document.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+
+    let bgAnimId = null;
+    function drawBgParticles() {
+      const [r, g, b] = getPrimaryRGB();
+      pctx.clearRect(0, 0, W, H);
+
+      for (const p of bgParts) {
+        const dx = mx - p.x, dy = my - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 300) {
+          p.vx += (dx / dist) * 0.001;
+          p.vy += (dy / dist) * 0.001;
+        }
+        p.vx *= 0.99; p.vy *= 0.99;
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (speed > 0.4) { p.vx *= 0.4 / speed; p.vy *= 0.4 / speed; }
+
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+        pctx.beginPath();
+        pctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        pctx.fillStyle = `rgba(${r},${g},${b},${0.04 + p.r * 0.04})`;
+        pctx.fill();
+      }
+
+      // Connection lines between close particles
+      for (let i = 0; i < bgParts.length; i++) {
+        for (let j = i + 1; j < bgParts.length; j++) {
+          const dx = bgParts[i].x - bgParts[j].x;
+          const dy = bgParts[i].y - bgParts[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 100) {
+            pctx.beginPath();
+            pctx.moveTo(bgParts[i].x, bgParts[i].y);
+            pctx.lineTo(bgParts[j].x, bgParts[j].y);
+            pctx.strokeStyle = `rgba(${r},${g},${b},${0.015 * (1 - d / 100)})`;
+            pctx.lineWidth = 0.5;
+            pctx.stroke();
+          }
+        }
+      }
+
+      bgAnimId = requestAnimationFrame(drawBgParticles);
+    }
+
+    // Pause when tab hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && bgAnimId) {
+        cancelAnimationFrame(bgAnimId); bgAnimId = null;
+      } else if (!document.hidden && !bgAnimId) {
+        drawBgParticles();
+      }
+    });
+
+    drawBgParticles();
+  })();
 
   /* ════════════════════════════════════════════════════════════════
      EMAIL

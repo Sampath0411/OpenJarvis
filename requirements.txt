@@ -48,3 +48,6 @@ python-telegram-bot>=21.3  # async-first v21, no decorator gymnastics
 
 # ── File type detection ───────────────────────────────
 python-magic>=0.4.27    # MIME type detection for file explorer
+
+# ── Download manager ───────────────────────────────────
+yt-dlp>=2024.12.0      # download videos/audio from YouTube and other sites

@@ -386,3 +386,71 @@ def open_browser_tab(site: str) -> str:
         url = "https://" + url
     webbrowser.open(url)
     return f"Opened {url}"
+
+
+# ── Download manager (yt-dlp) ───────────────────────
+
+
+@tool(
+    name="download_video",
+    description=(
+        "Download a YouTube video (or any supported URL) using yt-dlp. "
+        "Saves to ~/jarvis_workspace/downloads/ by default. "
+        "Supports videos, audio-only, and playlists."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "url": {"type": "string", "description": "Video/audio URL to download."},
+            "format": {
+                "type": "string",
+                "enum": ["video", "audio"],
+                "description": "'video' for mp4, 'audio' for mp3 (default video).",
+                "default": "video",
+            },
+            "path": {"type": "string", "description": "Output folder (default ~/jarvis_workspace/downloads)."},
+        },
+        "required": ["url"],
+    },
+)
+def download_video(url: str, format: str = "video", path: str = "") -> str:
+    out_dir = Path(path).expanduser() if path else Path.home() / "jarvis_workspace" / "downloads"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Check if yt-dlp is installed
+    try:
+        subprocess.run(["yt-dlp", "--version"], capture_output=True, timeout=5)
+    except FileNotFoundError:
+        return "yt-dlp not installed. Run: pip install yt-dlp"
+    except Exception:
+        return "yt-dlp not installed. Run: pip install yt-dlp"
+
+    cmd = [
+        "yt-dlp",
+        "-o", str(out_dir / "%(title)s.%(ext)s"),
+        "--no-playlist",
+        "--print", "after_move:filepath",
+    ]
+    if format == "audio":
+        cmd += ["-x", "--audio-format", "mp3", "--audio-quality", "0"]
+    else:
+        cmd += ["-f", "best[height<=1080]"]
+
+    cmd.append(url)
+
+    try:
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=600,  # 10 min max
+        )
+    except subprocess.TimeoutExpired:
+        return "Download timed out (10 min limit)."
+    except Exception as exc:
+        return f"Download failed: {exc}"
+
+    if proc.returncode != 0:
+        return f"Download error: {(proc.stderr or '')[:300]}"
+
+    output = (proc.stdout or "").strip()
+    if output:
+        return f"✅ Downloaded: {output}"
+    return f"✅ Download complete → {out_dir}"

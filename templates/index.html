@@ -66,6 +66,7 @@
   <!-- Background layers -->
   <div class="bg-glow"></div>
   <div class="bg-grid"></div>
+  <canvas id="bgParticles" class="bg-particles"></canvas>
 
   <!-- Boot overlay -->
   <div id="boot" class="boot">
@@ -216,7 +217,35 @@
       </div>
     </main>
 
-    <!-- Right Sidebar (removed) -->
+    <!-- Right Sidebar: Context -->
+    <aside class="sidebar sidebar--right" id="sidebarRight">
+      <div class="sidebar-section">
+        <div class="sidebar-label">CONVERSATION</div>
+        <div class="context-stats" id="contextStats">
+          <div class="stat-row"><span>Messages</span><span id="ctxMsgCount">0</span></div>
+          <div class="stat-row"><span>Tools used</span><span id="ctxToolCount">0</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section sidebar-section--grow">
+        <div class="sidebar-label">ACTIVE TOOLS</div>
+        <div id="ctxTools" class="context-tools">
+          <div class="ctx-empty">No tools used yet.</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">PLUGINS</div>
+        <div id="ctxPlugins" class="context-tools">
+          <div class="ctx-empty">--</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section sidebar-section--compact">
+        <div class="sidebar-label">AGENT</div>
+        <div id="ctxAgent" class="context-agent">IDLE</div>
+      </div>
+    </aside>
   </div>
 
   <!-- Mobile bottom nav -->

@@ -16,3 +16,5 @@ from . import vision_tools as _vision_tools  # noqa: F401,E402
 from . import owner_tools as _owner_tools    # noqa: F401,E402
 from . import creator as _creator            # noqa: F401,E402
 from . import email_tool as _email_tool      # noqa: F401,E402
+from . import code_tools as _code_tools      # noqa: F401,E402
+from . import phone_tools as _phone_tools    # noqa: F401,E402

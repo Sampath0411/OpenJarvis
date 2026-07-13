@@ -1,10 +1,12 @@
-"""File-creator automations — text formats, binary documents, images, and code execution.
+"""File-creator automations — text formats, binary documents, images, code execution,
+and full project scaffolding.
 
 Tools registered:
     create_markdown, create_html, create_csv, create_json, create_yaml,
     create_xml, create_txt, create_python_file, create_code_file,
     create_pdf, create_docx, create_xlsx, create_pptx,
-    generate_image, run_python.
+    generate_image, run_python, run_code_file,
+    create_website, scaffold_project.
 
 Design notes
 ------------
@@ -756,6 +758,184 @@ def create_pptx(content: str, path: str = "", title: str = "") -> str:
         return f"Wrote PPTX ({p.stat().st_size} bytes) to {p}"
     except Exception as exc:  # noqa: BLE001
         return f"Couldn't write PPTX {p}: {exc}"
+
+
+# ════════════════════════════════════════════════════════
+#  Website + project scaffolding
+# ════════════════════════════════════════════════════════
+
+
+@tool(
+    name="create_website",
+    description=(
+        "Create a complete website folder with HTML + CSS + JS files. "
+        "Provide the HTML body, CSS styles, and JS code separately. "
+        "All files are linked together (CSS via <link>, JS via <script>). "
+        "A folder is created at the given path with index.html, style.css, and script.js."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "html": {"type": "string", "description": "HTML body content (inside <body>…</body>)."},
+            "css": {"type": "string", "description": "CSS stylesheet content."},
+            "js": {"type": "string", "description": "JavaScript code."},
+            "path": {"type": "string", "description": "Output folder path. If empty, uses ~/jarvis_workspace/website_<timestamp>."},
+            "title": {"type": "string", "description": "Page <title> (default 'JARVIS Generated')."},
+        },
+        "required": ["html"],
+    },
+)
+def create_website(html: str, css: str = "", js: str = "", path: str = "", title: str = "") -> str:
+    if not path:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        folder = WORKSPACE / f"website_{stamp}"
+    else:
+        folder = Path(path).expanduser()
+    if _is_blocked(str(folder)):
+        return f"Refused: '{folder}' is in a protected system directory."
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        return f"Couldn't create folder {folder}: {exc}"
+
+    title_tag = f"<title>{_html_escape(title or 'JARVIS Generated')}</title>"
+    css_link = '<link rel="stylesheet" href="style.css">' if css else ""
+    js_script = '<script src="script.js"></script>' if js else ""
+
+    full_html = (
+        "<!DOCTYPE html>\n"
+        '<html lang="en">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f"{title_tag}\n"
+        f"{css_link}\n"
+        "</head>\n"
+        "<body>\n"
+        f"{html}\n"
+        f"{js_script}\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+    try:
+        (folder / "index.html").write_text(full_html, encoding="utf-8")
+        if css:
+            (folder / "style.css").write_text(css, encoding="utf-8")
+        if js:
+            (folder / "script.js").write_text(js, encoding="utf-8")
+        files_created = ["index.html"]
+        if css:
+            files_created.append("style.css")
+        if js:
+            files_created.append("script.js")
+        return f"Website created at {folder} with {', '.join(files_created)}"
+    except Exception as exc:
+        return f"Couldn't write website files: {exc}"
+
+
+@tool(
+    name="scaffold_project",
+    description=(
+        "Create a project folder with multiple files from a JSON description. "
+        "Each entry has a 'path' (relative path inside the project) and "
+        "'content' (file content as string). Ideal for scaffolding apps, "
+        "multi-file projects, or code repos. Automatically looks up the "
+        "right file extension for common languages (python→.py, js→.js, etc)."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "project_name": {"type": "string", "description": "Name of the project folder."},
+            "files": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string", "description": "Relative path inside the project, e.g. 'src/main.py' or 'README.md'."},
+                        "content": {"type": "string", "description": "File content."},
+                    },
+                    "required": ["path", "content"],
+                },
+                "description": "List of files to create. Each has a path (relative) and content (string).",
+            },
+            "root_dir": {"type": "string", "description": "Parent directory (default: ~/jarvis_workspace)."},
+        },
+        "required": ["project_name", "files"],
+    },
+)
+def scaffold_project(project_name: str, files: list[dict], root_dir: str = "") -> str:
+    root = Path(root_dir).expanduser() if root_dir else WORKSPACE
+    project_dir = root / project_name
+    if _is_blocked(str(project_dir)):
+        return f"Refused: '{project_dir}' is in a protected system directory."
+    try:
+        project_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        return f"Couldn't create project folder: {exc}"
+
+    created = []
+    for f in files:
+        path = f.get("path", "")
+        content = f.get("content", "")
+        if not path:
+            continue
+        file_path = project_dir / path
+        if _is_blocked(str(file_path)):
+            return f"Refused: '{file_path}' is in a protected system directory."
+        try:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.write_text(content, encoding="utf-8")
+            created.append(path)
+        except Exception as exc:
+            return f"Couldn't write {path}: {exc}"
+
+    file_list = "\n".join(f"  📄 {f}" for f in created)
+    return f"Project '{project_name}' created at {project_dir} with {len(created)} files:\n{file_list}"
+
+
+@tool(
+    name="run_code_file",
+    description=(
+        "Execute a saved Python file from disk and return its output. "
+        "Use this when you've already written a .py file and want to test it. "
+        "Runs with a 30-second timeout. Requires approval."
+    ),
+    requires_approval=True,
+    destructive=True,
+    parameters={
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Full path to the .py file to execute."},
+            "args": {"type": "string", "description": "Optional command-line arguments to pass to the script."},
+        },
+        "required": ["path"],
+    },
+)
+def run_code_file(path: str, args: str = "") -> str:
+    p = Path(path).expanduser()
+    if not p.exists():
+        return f"File not found: {path}"
+    if p.suffix.lower() != ".py":
+        return f"Only .py files can be executed (got '{p.suffix}')"
+    try:
+        cmd = [sys.executable, str(p)]
+        if args:
+            cmd.extend(args.split())
+        proc = subprocess.run(
+            cmd, cwd=p.parent, capture_output=True, text=True,
+            timeout=30, shell=False,
+        )
+    except subprocess.TimeoutExpired:
+        return f"Script timed out after 30s: {p.name}"
+    except Exception as exc:
+        return f"Couldn't run {p.name}: {exc}"
+    out = (proc.stdout or "") + (proc.stderr or "")
+    if not out.strip():
+        return f"{p.name} ran (exit {proc.returncode}, no output)"
+    return out.strip()[:8000] + (
+        f"\n(exit {proc.returncode})" if proc.returncode != 0 else ""
+    )
 
 
 # ════════════════════════════════════════════════════════

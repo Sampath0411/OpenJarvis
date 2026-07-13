@@ -6,329 +6,16 @@
   <title>JARVIS OS — Open-Source AI Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --primary: #00d4ff;
-      --primary-dim: #007a99;
-      --primary-glow: rgba(0, 212, 255, 0.35);
-      --accent: #f0b34b;
-      --accent-dim: #8a6410;
-      --accent-glow: rgba(240, 179, 75, 0.3);
-      --success: #2ecc71;
-      --danger: #ff5252;
-      --bg-base: #080c10;
-      --bg-surface: #0e151c;
-      --bg-elevated: #141d26;
-      --bg-glass: rgba(16, 26, 34, 0.72);
-      --bg-glass-hover: rgba(20, 34, 44, 0.82);
-      --border: rgba(0, 212, 255, 0.18);
-      --border-strong: rgba(0, 212, 255, 0.30);
-      --text: #e0ecf0;
-      --text-dim: #68828e;
-      --text-muted: #3d525c;
-      --sans: 'Inter', system-ui, -apple-system, sans-serif;
-      --mono: 'JetBrains Mono', 'Cascadia Code', monospace;
-      --radius: 10px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--sans);
-      background: var(--bg-base);
-      color: var(--text);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-
-    /* ===== Background ===== */
-    .bg-glow {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, var(--primary-glow), transparent 70%),
-        radial-gradient(ellipse 50% 40% at 30% 100%, rgba(240, 179, 75, 0.06), transparent 60%);
-    }
-    .bg-grid {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.15;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 56px 56px;
-    }
-
-    /* ===== Nav ===== */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 40px;
-      background: rgba(8, 12, 16, 0.8);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-    }
-    nav .logo {
-      font-family: var(--mono); font-weight: 600; font-size: 18px;
-      color: #fff; letter-spacing: 3px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    nav .logo .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 12px var(--primary-glow);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-    nav .links { display: flex; gap: 24px; align-items: center; }
-    nav .links a {
-      color: var(--text-dim); text-decoration: none;
-      font-size: 13px; font-weight: 500; transition: 0.2s;
-    }
-    nav .links a:hover { color: var(--primary); }
-    .btn-ghost {
-      padding: 8px 20px; border: 1px solid var(--border-strong);
-      border-radius: 999px; color: var(--primary); text-decoration: none;
-      font-size: 13px; font-weight: 600; transition: 0.2s;
-      font-family: var(--sans);
-    }
-    .btn-ghost:hover { background: var(--bg-glass-hover); box-shadow: 0 0 20px var(--primary-glow); }
-
-    /* ===== Hero ===== */
-    .hero {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center;
-      padding: 120px 24px 80px;
-    }
-    .hero-canvas-wrap {
-      position: relative;
-      margin-bottom: 40px;
-    }
-    #reactorCanvas {
-      width: 200px; height: 200px;
-      filter: drop-shadow(0 0 40px var(--primary-glow));
-    }
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      font-weight: 800;
-      letter-spacing: 6px;
-      color: #fff;
-      text-shadow: 0 0 40px var(--primary-glow);
-      margin-bottom: 20px;
-    }
-    .hero h1 span { color: var(--primary); }
-    .hero p {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--text-dim);
-      max-width: 640px;
-      margin-bottom: 40px;
-      line-height: 1.7;
-    }
-    .hero-actions {
-      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-    }
-    .btn-primary {
-      padding: 14px 36px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
-      color: var(--bg-base); border: none;
-      border-radius: 999px;
-      font-family: var(--mono); font-weight: 600; font-size: 14px;
-      letter-spacing: 1.5px;
-      cursor: pointer; text-decoration: none;
-      box-shadow: 0 0 24px var(--primary-glow);
-      transition: all 0.25s;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px var(--primary-glow); filter: brightness(1.1); }
-    .btn-outline {
-      padding: 14px 36px;
-      border: 1px solid var(--border-strong);
-      border-radius: 999px;
-      color: var(--text); text-decoration: none;
-      font-family: var(--mono); font-size: 14px;
-      letter-spacing: 1px;
-      transition: all 0.2s;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-outline:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
-
-    .hero-stats {
-      display: flex; gap: 40px; margin-top: 60px;
-      flex-wrap: wrap; justify-content: center;
-    }
-    .hero-stat { text-align: center; }
-    .hero-stat .num {
-      font-family: var(--mono); font-size: 28px; font-weight: 700;
-      color: var(--primary);
-    }
-    .hero-stat .label { font-size: 12px; color: var(--text-dim); letter-spacing: 1px; margin-top: 4px; }
-
-    /* ===== Sections ===== */
-    section {
-      position: relative; z-index: 1;
-      padding: 100px 24px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .section-tag {
-      font-family: var(--mono); font-size: 11px;
-      letter-spacing: 3px; color: var(--primary);
-      margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 16px;
-    }
-    .section-desc {
-      font-size: 1rem;
-      color: var(--text-dim);
-      max-width: 600px;
-      margin-bottom: 50px;
-      line-height: 1.7;
-    }
-
-    /* ===== Features ===== */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 16px;
-    }
-    .feature-card {
-      padding: 28px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      background: var(--bg-glass);
-      backdrop-filter: blur(12px);
-      transition: 0.25s;
-    }
-    .feature-card:hover {
-      border-color: var(--border-strong);
-      transform: translateY(-4px);
-      box-shadow: 0 8px 40px rgba(0, 212, 255, 0.08);
-    }
-    .feature-icon {
-      font-size: 28px; margin-bottom: 16px; display: block;
-    }
-    .feature-card h3 {
-      font-size: 16px; font-weight: 700; margin-bottom: 10px;
-      color: #fff;
-    }
-    .feature-card p {
-      font-size: 13px; color: var(--text-dim); line-height: 1.6;
-    }
-
-    /* ===== Terminal ===== */
-    .terminal-section {
-      position: relative; z-index: 1;
-      padding: 60px 24px 100px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .terminal {
-      background: #0a0e14;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: 0 0 60px rgba(0, 212, 255, 0.05);
-    }
-    .terminal-bar {
-      display: flex; align-items: center; gap: 8px;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.03);
-      border-bottom: 1px solid var(--border);
-    }
-    .terminal-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-    }
-    .terminal-dot:nth-child(1) { background: #ff5f56; }
-    .terminal-dot:nth-child(2) { background: #ffbd2e; }
-    .terminal-dot:nth-child(3) { background: #27c93f; }
-    .terminal-bar span {
-      font-size: 11px; color: var(--text-muted); font-family: var(--mono);
-      margin-left: 12px;
-    }
-    .terminal-body {
-      padding: 24px;
-      font-family: var(--mono); font-size: 13px;
-      line-height: 1.8;
-      color: var(--text-dim);
-    }
-    .terminal-body .prompt { color: var(--success); }
-    .terminal-body .cmd { color: var(--text); }
-    .terminal-body .output { color: var(--primary); }
-    .terminal-body .comment { color: var(--text-muted); }
-
-    /* ===== Commands Grid ===== */
-    .commands-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 10px;
-    }
-    .cmd-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-glass);
-      font-size: 13px;
-    }
-    .cmd-item code {
-      font-family: var(--mono); font-size: 12px;
-      color: var(--accent); white-space: nowrap;
-    }
-    .cmd-item span { color: var(--text-dim); }
-
-    /* ===== Footer ===== */
-    footer {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 60px 24px 40px;
-      border-top: 1px solid var(--border);
-    }
-    footer p { font-size: 13px; color: var(--text-dim); }
-    footer a { color: var(--primary); text-decoration: none; }
-
-    .footer-links { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-    .footer-links a { color: var(--text-dim); font-size: 13px; text-decoration: none; transition: 0.2s; }
-    .footer-links a:hover { color: var(--primary); }
-
-    /* ===== Responsive ===== */
-    @media (max-width: 768px) {
-      nav { padding: 14px 20px; }
-      nav .links { gap: 16px; }
-      nav .links a { font-size: 12px; }
-      nav .links .btn-ghost { padding: 6px 14px; font-size: 12px; }
-
-      .hero { padding: 100px 20px 60px; }
-      #reactorCanvas { width: 140px; height: 140px; }
-      .hero-stats { gap: 24px; }
-
-      section { padding: 60px 20px; }
-      .features-grid { grid-template-columns: 1fr; }
-
-      .terminal-body { font-size: 11px; padding: 16px; }
-      .commands-grid { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 480px) {
-      nav .links a:not(.btn-ghost) { display: none; }
-      .hero h1 { letter-spacing: 3px; }
-      .btn-primary, .btn-outline { padding: 12px 24px; font-size: 13px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/static/css/docs.css" />
 </head>
 <body>
 
 <div class="bg-glow"></div>
 <div class="bg-grid"></div>
+<canvas id="bgParticles"></canvas>
 
 <!-- Nav -->
-<nav>
+<nav id="navbar">
   <div class="logo">
     <span class="dot"></span>
     JARVIS<span style="color:var(--primary)">_</span>OS
@@ -342,89 +29,89 @@
 </nav>
 
 <!-- Hero -->
-<section class="hero">
-  <div class="hero-canvas-wrap">
+<section class="hero" data-reveal-group>
+  <div class="hero-canvas-wrap" data-reveal>
     <canvas id="reactorCanvas" width="200" height="200"></canvas>
   </div>
-  <h1>Your <span>AI</span> Assistant.<br />Your <span>Computer</span>.</h1>
-  <p>
+  <h1 data-reveal>Your <span>AI</span> Assistant.<br />Your <span>Computer</span>.</h1>
+  <p data-reveal>
     JARVIS OS is an open-source, real-time AI personal assistant that lives on <em>your</em> machine.
     Chat naturally, control your desktop, automate tasks — all powered by Google Gemini.
   </p>
-  <div class="hero-actions">
+  <div class="hero-actions" data-reveal>
     <a href="#install" class="btn-primary">✦ Get Started</a>
     <a href="#features" class="btn-outline">Explore Features</a>
   </div>
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="num">20+</div><div class="label">TOOLS</div></div>
-    <div class="hero-stat"><div class="num">30k+</div><div class="label">LINES OF CODE</div></div>
-    <div class="hero-stat"><div class="num">3</div><div class="label">PERSONAS</div></div>
-    <div class="hero-stat"><div class="num">5</div><div class="label">THEMES</div></div>
+  <div class="hero-stats" data-reveal>
+    <div class="hero-stat"><div class="num" data-target="20">0</div><div class="label">TOOLS</div></div>
+    <div class="hero-stat"><div class="num" data-target="30">0</div><div class="label">INTEGRATIONS</div></div>
+    <div class="hero-stat"><div class="num" data-target="3">0</div><div class="label">PERSONAS</div></div>
+    <div class="hero-stat"><div class="num" data-target="7">0</div><div class="label">THEMES</div></div>
   </div>
 </section>
 
 <!-- Features -->
-<section id="features">
-  <div class="section-tag">✦ CAPABILITIES</div>
-  <h2 class="section-title">What JARVIS Can Do</h2>
-  <p class="section-desc">Over 20 built-in tools let JARVIS control your computer, browse the web, create documents, and more — all through natural conversation.</p>
+<section id="features" data-reveal-group>
+  <div class="section-tag" data-reveal>✦ CAPABILITIES</div>
+  <h2 class="section-title" data-reveal>What JARVIS Can Do</h2>
+  <p class="section-desc" data-reveal>Over 20 built-in tools let JARVIS control your computer, browse the web, create documents, and more — all through natural conversation.</p>
   <div class="features-grid">
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🧠</span>
       <h3>Natural Chat</h3>
       <p>Conversational AI with memory across sessions. Remembers facts, recalls past conversations, understands context.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🖥️</span>
       <h3>Desktop Control</h3>
       <p>Open apps, manage windows, adjust volume &amp; brightness, take screenshots, lock, sleep, shutdown — all by voice or text.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🌐</span>
       <h3>Web &amp; Search</h3>
       <p>Open websites, search Google, play YouTube, check Wikipedia, get real-time weather — directly from chat.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">📁</span>
       <h3>File Management</h3>
       <p>Create, read, edit, move, copy, search, and delete files anywhere on your disk. Protected system directories are blocked.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">📄</span>
       <h3>Document Creator</h3>
       <p>Generate PDF, Word, Excel, PowerPoint, Markdown, HTML, CSV, images — from simple natural language descriptions.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🧮</span>
       <h3>Math Engine</h3>
       <p>Solve equations, derivatives, integrals, algebra — powered by SymPy. Fast, accurate, no internet needed.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">📱</span>
       <h3>Telegram Remote</h3>
       <p>Full remote control from anywhere via Telegram. Inline keyboards, approval flow, push alerts, memory backup.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">💬</span>
       <h3>WhatsApp Messaging</h3>
       <p>Send messages and files via WhatsApp Desktop with automated UI. Works with any contact in your WhatsApp.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🎯</span>
       <h3>Autonomous Goals</h3>
       <p>Set multi-step goals with cron scheduling. JARVIS plans, executes, and reflects on tasks independently.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🎭</span>
       <h3>Multiple Personas</h3>
       <p>Choose from JARVIS (British butler), FRIDAY (casual friend), or COACH (productivity mode). Each with unique tone.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🎨</span>
-      <h3>5 Themes</h3>
-      <p>Arc (cyan), Mark III (gold), Ultron (red), Stealth (mono), Midnight (purple) — glassmorphism design system.</p>
+      <h3>7 Themes</h3>
+      <p>Arc, Mark III, Ultron, Stealth, Midnight, AMOLED, Light — a full glassmorphism design system with live switching.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <span class="feature-icon">🖼️</span>
       <h3>Vision &amp; Screen</h3>
       <p>Describe images, analyze screenshots, read what's on your screen — built-in multimodal AI vision.</p>
@@ -433,75 +120,67 @@
 </section>
 
 <!-- Terminal Demo -->
-<section class="terminal-section" id="install">
-  <div class="section-tag">⚡ QUICK START</div>
-  <h2 class="section-title">Install in One Minute</h2>
-  <p class="section-desc" style="max-width:700px;">
+<section class="terminal-section" id="install" data-reveal-group>
+  <div class="section-tag" data-reveal>⚡ QUICK START</div>
+  <h2 class="section-title" data-reveal>Install in One Minute</h2>
+  <p class="section-desc" style="max-width:700px;" data-reveal>
     Get your free Gemini API key, install dependencies, and launch.
   </p>
-  <div class="terminal">
+  <div class="terminal" data-reveal>
     <div class="terminal-bar">
       <span class="terminal-dot"></span>
       <span class="terminal-dot"></span>
       <span class="terminal-dot"></span>
       <span>bash — JARVIS OS setup</span>
     </div>
-    <div class="terminal-body">
-      <span class="comment"># 1. Get a free API key at https://aistudio.google.com/apikey</span><br />
-      <span class="comment"># 2. Clone &amp; install</span><br />
-      <span class="prompt">$</span> <span class="cmd">git clone https://github.com/yourusername/OpenJarvis.git</span><br />
-      <span class="prompt">$</span> <span class="cmd">cd OpenJarvis</span><br />
-      <span class="prompt">$</span> <span class="cmd">pip install -r requirements.txt</span><br />
-      <span class="output">✓ Installed all dependencies</span><br />
-      <span class="comment"># 3. Configure</span><br />
-      <span class="prompt">$</span> <span class="cmd">cp .env.example .env</span><br />
-      <span class="comment"># 4. Launch</span><br />
-      <span class="prompt">$</span> <span class="cmd">python main.py</span><br />
-      <span class="output">✦ JARVIS HUD running at http://127.0.0.1:5000</span><br />
+    <div class="terminal-body" id="terminalBody">
+      <span class="comment"># Initializing terminal demo…</span><br />
+      <span class="prompt">$</span> <span class="cmd" id="termCmd"></span><span class="cursor" id="termCursor"></span><br />
+      <span class="output" id="termOutput"></span>
     </div>
   </div>
 </section>
 
 <!-- Example Commands -->
-<section>
-  <div class="section-tag">💬 TRY THESE</div>
-  <h2 class="section-title">Things to Ask JARVIS</h2>
-  <p class="section-desc">Everyday commands that just work.</p>
+<section data-reveal-group>
+  <div class="section-tag" data-reveal>💬 TRY THESE</div>
+  <h2 class="section-title" data-reveal>Things to Ask JARVIS</h2>
+  <p class="section-desc" data-reveal>Everyday commands that just work.</p>
   <div class="commands-grid">
-    <div class="cmd-item"><code>"Open Chrome"</code><span>Launch browser</span></div>
-    <div class="cmd-item"><code>"Weather in Vizag"</code><span>Live weather</span></div>
-    <div class="cmd-item"><code>"Solve x² - 4 = 0"</code><span>Math solver</span></div>
-    <div class="cmd-item"><code>"Tell me a joke"</code><span>Joke time</span></div>
-    <div class="cmd-item"><code>"Take a screenshot"</code><span>Capture screen</span></div>
-    <div class="cmd-item"><code>"Create a PDF resume"</code><span>Document gen</span></div>
-    <div class="cmd-item"><code>"Lock my PC"</code><span>Secure system</span></div>
-    <div class="cmd-item"><code>"Set a reminder 10min"</code><span>Timed alerts</span></div>
-    <div class="cmd-item"><code>"Remember my birthday"</code><span>Memory</span></div>
-    <div class="cmd-item"><code>"What's on my screen?"</code><span>Vision</span></div>
-    <div class="cmd-item"><code>"Send WhatsApp to..."</code><span>Messaging</span></div>
-    <div class="cmd-item"><code>"Check system status"</code><span>Health check</span></div>
+    <div class="cmd-item" data-reveal><code>"Open Chrome"</code><span>Launch browser</span></div>
+    <div class="cmd-item" data-reveal><code>"Weather in Vizag"</code><span>Live weather</span></div>
+    <div class="cmd-item" data-reveal><code>"Solve x² - 4 = 0"</code><span>Math solver</span></div>
+    <div class="cmd-item" data-reveal><code>"Tell me a joke"</code><span>Joke time</span></div>
+    <div class="cmd-item" data-reveal><code>"Take a screenshot"</code><span>Capture screen</span></div>
+    <div class="cmd-item" data-reveal><code>"Create a PDF resume"</code><span>Document gen</span></div>
+    <div class="cmd-item" data-reveal><code>"Lock my PC"</code><span>Secure system</span></div>
+    <div class="cmd-item" data-reveal><code>"Set a reminder 10min"</code><span>Timed alerts</span></div>
+    <div class="cmd-item" data-reveal><code>"Remember my birthday"</code><span>Memory</span></div>
+    <div class="cmd-item" data-reveal><code>"What's on my screen?"</code><span>Vision</span></div>
+    <div class="cmd-item" data-reveal><code>"Send WhatsApp to..."</code><span>Messaging</span></div>
+    <div class="cmd-item" data-reveal><code>"Check system status"</code><span>Health check</span></div>
   </div>
 </section>
 
 <!-- Architecture -->
-<section>
-  <div class="section-tag">🏗️ ARCHITECTURE</div>
-  <h2 class="section-title">How It Works</h2>
-  <p class="section-desc">Python + Google Gemini + Flask — all running locally on your machine.</p>
+<section data-reveal-group>
+  <div class="section-tag" data-reveal>🏗️ ARCHITECTURE</div>
+  <h2 class="section-title" data-reveal>How It Works</h2>
+  <p class="section-desc" data-reveal>Python + Google Gemini + Flask — all running locally on your machine.</p>
   <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <h3>🧠 Google Gemini</h3>
       <p>Brain of the operation. Handles natural language understanding, tool selection, vision, and conversation. Free tier with unlimited usage.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <h3>⚙️ Python Backend</h3>
       <p>Flask web server with threaded request handling. Tool registry with 20+ automations. Background scheduler for cron goals.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <h3>🎨 Web HUD</h3>
       <p>Vanilla HTML/CSS/JS with no frameworks. Canvas-based arc reactor, glassmorphism design, real-time SSE streaming.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-reveal>
       <h3>📱 Telegram Bot</h3>
       <p>Async Python bot with inline keyboards, approval flow, push alerts. Runs as a daemon thread inside the Flask server.</p>
     </div>
@@ -509,16 +188,194 @@
 </section>
 
 <!-- Footer -->
-<footer>
-  <div class="footer-links">
+<footer data-reveal-group>
+  <div class="footer-links" data-reveal>
     <a href="#features">Features</a>
     <a href="#install">Install</a>
     <a href="https://github.com" target="_blank">GitHub</a>
     <a href="https://aistudio.google.com/apikey" target="_blank">Get API Key</a>
   </div>
-  <p>Built with ❤️ by <a href="https://github.com/sampath" target="_blank">Sampath Satya Saran</a></p>
-  <p style="margin-top:8px; font-size:12px;">Powered by Google Gemini · MIT License</p>
+  <p data-reveal>Built with ❤️ by <a href="https://github.com/sampath" target="_blank">Sampath Satya Saran</a></p>
+  <p style="margin-top:8px; font-size:12px;" data-reveal>Powered by Google Gemini · MIT License</p>
 </footer>
+
+<!-- Background Particles JS -->
+<script>
+(function() {
+  const canvas = document.getElementById('bgParticles');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  const parts = Array.from({ length: 30 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.2,
+    vy: (Math.random() - 0.5) * 0.2,
+    r: 0.5 + Math.random() * 1.5,
+  }));
+
+  let mx = W/2, my = H/2;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+  function draw() {
+    const hex = css('--primary');
+    const n = parseInt(hex.replace('#', ''), 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (const p of parts) {
+      const dx = mx - p.x, dy = my - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 300) {
+        p.vx += (dx/dist) * 0.001;
+        p.vy += (dy/dist) * 0.001;
+      }
+      p.vx *= 0.99; p.vy *= 0.99;
+      const spd = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
+      if (spd > 0.4) { p.vx *= 0.4/spd; p.vy *= 0.4/spd; }
+
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${0.05 + p.r * 0.05})`;
+      ctx.fill();
+    }
+
+    // Connection lines
+    for (let i = 0; i < parts.length; i++) {
+      for (let j = i+1; j < parts.length; j++) {
+        const dx = parts[i].x - parts[j].x;
+        const dy = parts[i].y - parts[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 100) {
+          ctx.beginPath();
+          ctx.moveTo(parts[i].x, parts[i].y);
+          ctx.lineTo(parts[j].x, parts[j].y);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${0.02 * (1 - d/100)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+<!-- Scroll Reveal + Interactive JS -->
+<script>
+(function() {
+  // ── Nav scroll effect ──
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 80);
+  });
+
+  // ── Scroll reveal with IntersectionObserver ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const children = entry.target.querySelectorAll('[data-reveal]');
+        children.forEach((el, i) => {
+          setTimeout(() => el.classList.add('revealed'), i * 100);
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-reveal-group]').forEach(el => observer.observe(el));
+
+  // ── Stats count-up ──
+  let counted = false;
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !counted) {
+        counted = true;
+        document.querySelectorAll('.hero-stat .num[data-target]').forEach(el => {
+          const target = parseInt(el.dataset.target, 10);
+          const duration = 1500;
+          const start = performance.now();
+          function update(now) {
+            const t = Math.min((now - start) / duration, 1);
+            // easeOutCubic
+            const ease = 1 - Math.pow(1 - t, 3);
+            el.textContent = Math.round(ease * target) + (t >= 1 && target > 20 ? '+' : '');
+            if (t < 1) requestAnimationFrame(update);
+          }
+          requestAnimationFrame(update);
+        });
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  const heroStats = document.querySelector('.hero-stats');
+  if (heroStats) statObserver.observe(heroStats);
+
+  // ── Terminal auto-typing demo ──
+  const demos = [
+    { cmd: 'git clone https://github.com/yourusername/OpenJarvis.git', output: '✓ Cloned repository (42 files)' },
+    { cmd: 'cd OpenJarvis && pip install -r requirements.txt', output: '✓ Installed all dependencies' },
+    { cmd: 'cp .env.example .env', output: '✓ Config ready (add your API key)' },
+    { cmd: 'python main.py', output: '✦ JARVIS HUD running at http://127.0.0.1:5000' },
+  ];
+
+  const termCmd = document.getElementById('termCmd');
+  const termOutput = document.getElementById('termOutput');
+  const termCursor = document.getElementById('termCursor');
+  let demoIdx = 0, charIdx = 0, isTyping = false;
+
+  function typeDemo() {
+    if (!termCmd || !termOutput) return;
+    const demo = demos[demoIdx % demos.length];
+    charIdx = 0;
+    isTyping = true;
+    termOutput.textContent = '';
+    termCmd.textContent = '';
+
+    function typeChar() {
+      if (charIdx < demo.cmd.length) {
+        termCmd.textContent += demo.cmd[charIdx];
+        charIdx++;
+        setTimeout(typeChar, 25 + Math.random() * 20);
+      } else {
+        isTyping = false;
+        termCursor.style.display = 'none';
+        setTimeout(() => {
+          termOutput.textContent = demo.output;
+          termOutput.className = 'output';
+        }, 300);
+        setTimeout(() => {
+          demoIdx++;
+          termOutput.textContent = '';
+          termCmd.textContent = '';
+          termCursor.style.display = 'inline-block';
+          setTimeout(typeDemo, 400);
+        }, 2500);
+      }
+    }
+    typeChar();
+  }
+
+  // Start terminal after a short delay
+  setTimeout(typeDemo, 1200);
+})();
+</script>
 
 <!-- Arc Reactor Animation -->
 <script>

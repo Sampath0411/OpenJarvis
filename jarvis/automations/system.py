@@ -376,3 +376,143 @@ def cancel_shutdown() -> str:
         return "Shutdown cancelled."
     except Exception as exc:  # noqa: BLE001
         return f"Couldn't cancel: {exc}"
+
+
+# ── Network tools ────────────────────────────────────
+
+
+@tool(
+    name="network_info",
+    description=(
+        "Show network status — Wi-Fi SSID, signal strength, public IP, "
+        "and local IP addresses."
+    ),
+)
+def network_info() -> str:
+    info: list[str] = []
+    IS_WIN = platform.system() == "Windows"
+
+    # Public IP
+    try:
+        import requests
+        r = requests.get("https://api.ipify.org?format=json", timeout=5)
+        if r.status_code == 200:
+            info.append(f"🌐 Public IP: {r.json().get('ip', 'unknown')}")
+    except Exception:
+        info.append("🌐 Public IP: unavailable")
+
+    # Local IP + SSID
+    try:
+        if IS_WIN:
+            out = subprocess.run(
+                "netsh wlan show interfaces",
+                capture_output=True, text=True, timeout=5, shell=True,
+            ).stdout or ""
+            for line in out.splitlines():
+                s = line.strip()
+                if "SSID" in s and "BSSID" not in s and ":" in s:
+                    info.append(f"📶 Wi-Fi: {s.split(':', 1)[-1].strip()}")
+                if "Signal" in s and ":" in s:
+                    info.append(f"📶 Signal: {s.split(':', 1)[-1].strip()}")
+                if "IPv4" in s and ":" in s and "fe80" not in s.lower():
+                    ip = s.split(":", 1)[-1].strip()
+                    if ip and not ip.startswith("169."):
+                        info.append(f"💻 Local IP: {ip}")
+        else:
+            out = subprocess.run(
+                "ifconfig 2>/dev/null || ip addr",
+                capture_output=True, text=True, timeout=5, shell=True,
+            ).stdout or ""
+            for line in out.splitlines():
+                s = line.strip()
+                if "inet " in s and "127.0.0.1" not in s:
+                    ip = s.split()[1] if len(s.split()) > 1 else ""
+                    info.append(f"💻 Local IP: {ip}")
+    except Exception:
+        info.append("💻 Local IP: unavailable")
+
+    return "\n".join(info) if info else "No network info available."
+
+
+# ── Clipboard tools ──────────────────────────────────
+
+
+@tool(
+    name="clipboard_copy",
+    description=("Copy text to the system clipboard."),
+    parameters={
+        "type": "object",
+        "properties": {
+            "text": {"type": "string", "description": "Text to copy."},
+        },
+        "required": ["text"],
+    },
+)
+def clipboard_copy(text: str) -> str:
+    # Try pyperclip first, fall back to Windows-only powershell
+    try:
+        import pyperclip
+        pyperclip.copy(text)
+        return f"✅ Copied {len(text)} chars to clipboard."
+    except ImportError:
+        pass
+
+    try:
+        if IS_WIN:
+            import subprocess
+            # Escape for PowerShell
+            escaped = text.replace("'", "''")
+            subprocess.run(
+                ["powershell", "-command", f"Set-Clipboard -Value '{escaped}'"],
+                capture_output=True, timeout=5,
+            )
+            return f"✅ Copied {len(text)} chars to clipboard."
+        elif IS_MAC:
+            subprocess.run(
+                ["osascript", "-e", f'set the clipboard to "{text}"'],
+                capture_output=True, timeout=5,
+            )
+            return f"✅ Copied {len(text)} chars to clipboard."
+        else:
+            subprocess.run(
+                ["xclip", "-selection", "clipboard"], input=text, text=True, timeout=5,
+            )
+            return f"✅ Copied {len(text)} chars to clipboard."
+    except Exception as exc:
+        return f"Couldn't copy to clipboard: {exc}"
+
+
+@tool(
+    name="clipboard_paste",
+    description=("Read text from the system clipboard."),
+)
+def clipboard_paste() -> str:
+    try:
+        import pyperclip
+        text = pyperclip.paste()
+        return text[:2000] if text else "Clipboard is empty."
+    except ImportError:
+        pass
+
+    try:
+        if IS_WIN:
+            proc = subprocess.run(
+                ["powershell", "-command", "Get-Clipboard"],
+                capture_output=True, text=True, timeout=5,
+            )
+            text = (proc.stdout or "").strip()
+            return text[:2000] if text else "Clipboard is empty."
+        elif IS_MAC:
+            proc = subprocess.run(
+                ["osascript", "-e", "the clipboard"],
+                capture_output=True, text=True, timeout=5,
+            )
+            return (proc.stdout or "").strip()[:2000] or "Clipboard is empty."
+        else:
+            proc = subprocess.run(
+                ["xclip", "-selection", "clipboard", "-o"],
+                capture_output=True, text=True, timeout=5,
+            )
+            return (proc.stdout or "").strip()[:2000] or "Clipboard is empty."
+    except Exception as exc:
+        return f"Couldn't read clipboard: {exc}"

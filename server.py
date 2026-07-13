@@ -115,6 +115,12 @@ def index():
     return send_from_directory("templates", "index.html")
 
 
+@app.route("/docs")
+@app.route("/docs/")
+def docs():
+    return send_from_directory("docs", "index.html")
+
+
 def _lan_url() -> str:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

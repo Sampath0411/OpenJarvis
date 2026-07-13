@@ -74,6 +74,11 @@ body::after {
 #three-bg {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 0; pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+#three-bg.visible {
+  opacity: 1;
 }
 #three-bg canvas {
   display: block;
@@ -514,6 +519,33 @@ footer a { color: var(--primary); text-decoration: none; }
 .footer-links { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
 .footer-links a { color: var(--text-dim); font-size: 13px; text-decoration: none; transition: 0.2s; }
 .footer-links a:hover { color: var(--primary); }
+
+/* ===== Back to Top ===== */
+.back-to-top {
+  position: fixed; bottom: 32px; right: 32px; z-index: 99;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  color: var(--primary);
+  font-size: 20px; font-family: var(--sans);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transform: translateY(12px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.back-to-top.visible {
+  opacity: 1; visibility: visible;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  background: var(--primary);
+  color: var(--bg-base);
+  box-shadow: 0 0 24px var(--primary-glow);
+  transform: translateY(-2px);
+}
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {

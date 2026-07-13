@@ -270,6 +270,9 @@ import * as THREE from 'three';
   renderer.setClearColor(0x000000, 0);
   container.appendChild(renderer.domElement);
 
+  // Fade in once rendered
+  requestAnimationFrame(() => container.classList.add('visible'));
+
   // ── Holographic 3D Grid ──
   const gridHelper = new THREE.GridHelper(20, 40, 0x00d4ff, 0x003344);
   gridHelper.position.y = -2.5;
@@ -485,6 +488,30 @@ import * as THREE from 'three';
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 80);
   });
+
+  // ── Nav smooth scroll with offset ──
+  document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        const navH = nav.offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - navH - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // ── Back to top ──
+  const backBtn = document.getElementById('backToTop');
+  if (backBtn) {
+    window.addEventListener('scroll', () => {
+      backBtn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    backBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 
   // ── Hero word split animation ──
   const heroH1 = document.getElementById('heroTitle');
@@ -756,6 +783,9 @@ import * as THREE from 'three';
   }
   draw();
 </script>
+
+<!-- Back to top -->
+<button id="backToTop" class="back-to-top" title="Back to top">↑</button>
 
 </body>
 </html>

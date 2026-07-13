@@ -833,7 +833,12 @@ def file_explorer():
       body: { path, action: "read" | "write", content: "..." }
     """
     if request.method == "GET":
-        path = (request.args.get("path") or "").strip() or os.path.expanduser("~")
+        raw = (request.args.get("path") or "").strip()
+        # Handle ~ as home directory shortcut
+        if raw in ("~", ""):
+            path = os.path.expanduser("~")
+        else:
+            path = os.path.expanduser(raw)
         if not os.path.exists(path):
             return jsonify({"error": "not_found", "message": "Path does not exist"}), 404
 
@@ -1254,7 +1259,9 @@ def run_server(open_browser: bool = False) -> None:
                 pass
 
     atexit.register(_on_shutdown)
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    port = int(os.getenv("JARVIS_PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+    print(f"JARVIS HUD running on http://127.0.0.1:{port}")
 
 
 if __name__ == "__main__":
